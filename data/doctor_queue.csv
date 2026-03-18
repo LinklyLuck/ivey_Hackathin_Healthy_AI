@@ -1,0 +1,13 @@
+queue_id,case_id,patient_id,patient_name,age,complaint_summary,final_priority,risk_level,department,red_flag,queue_status,queued_at
+Q001,CASE002,P002,James Chen,53,Chest tightness during exertion. History of previous MI. Diaphoresis present.,85,Red,Cardiology / Emergency,True,In Progress,2025-03-10 09:35:00
+Q002,CASE011,P011,Helen Nguyen,88,Sudden confusion and speech difficulty. Facial droop and arm weakness observed.,85,Red,Emergency,True,Waiting,2025-03-12 08:50:00
+Q003,CASE004,P004,William Park,85,Progressive dyspnea over 1 week. Cannot lie flat. Known CHF and COPD.,85,Red,Emergency,True,Waiting,2025-03-10 11:05:00
+Q004,CASE001,P001,Margaret Thompson,78,Shortness of breath with bilateral ankle swelling for 3 days.,61,Red,Internal Medicine,False,Waiting,2025-03-10 08:50:00
+Q005,CASE008,P008,David Patel,72,Hematuria for 2 days with lower back pain. History of prostate cancer.,52,Yellow,Internal Medicine,False,Waiting,2025-03-11 10:35:00
+Q006,CASE009,P009,Catherine Dubois,60,Severe widespread body pain and extreme fatigue flare-up. Fibromyalgia history.,50,Yellow,Internal Medicine,False,Waiting,2025-03-11 11:25:00
+Q007,CASE012,P012,Lucas Fernandez,26,Sharp RLQ abdominal pain. Fever and rebound tenderness present.,46,Yellow,General Surgery,False,Waiting,2025-03-12 10:05:00
+Q008,CASE010,P010,Michael O'Brien,21,Right knee injury during basketball. Previous ACL repair. Instability noted.,42,Yellow,Orthopedics,False,Waiting,2025-03-11 14:25:00
+Q009,CASE006,P006,Robert Kowalski,67,Progressive bilateral foot numbness and tingling. Diabetic neuropathy.,41,Yellow,Internal Medicine,False,Completed,2025-03-11 08:25:00
+Q010,CASE007,P007,Emily Watson,37,Severe anxiety with frequent panic attacks. Sleep and work impact.,38,Yellow,Mental Health,False,Waiting,2025-03-11 09:55:00
+Q011,CASE005,P005,Aisha Rahman,15,High fever 39.5C with sore throat and headache.,29,Green,Internal Medicine,False,Completed,2025-03-10 11:50:00
+Q012,CASE003,P003,Sarah Mitchell,30,Bilateral arm rash - itchy and spreading. Possible allergic reaction.,21,Green,Dermatology,False,Completed,2025-03-10 10:25:00

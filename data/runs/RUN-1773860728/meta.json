@@ -1,0 +1,193 @@
+{
+  "run_id": "RUN-1773860728",
+  "contract": {
+    "target_size": 500,
+    "description": "Generate synthetic elderly cardiac patients for a senior-friendly ED quality improvement study in York Region.",
+    "geography": {
+      "cities": [
+        "York Region"
+      ],
+      "hospital_filter": null
+    },
+    "age_rules": {
+      "min_age": 65,
+      "max_age": null,
+      "elderly_pct_target": 1.0
+    },
+    "department_mix": [
+      "Emergency Department"
+    ],
+    "diagnosis_filter": [
+      "cardiac"
+    ],
+    "escalation_target": 0.3,
+    "followup_targets": {
+      "min_30d": null,
+      "min_90d": null
+    },
+    "visit_channel_preference": null,
+    "required_fields": [],
+    "quality_thresholds": {
+      "fidelity": 0.8,
+      "utility": 0.7,
+      "privacy_epsilon": 5.0
+    },
+    "privacy_thresholds": {
+      "max_exact_match_rate": 0.05,
+      "min_k_anonymity": 3
+    }
+  },
+  "trace": [
+    {
+      "step": 1,
+      "icon": "\ud83d\udcdd",
+      "action": "Parse Request",
+      "detail": "Extracted 2 age rules, 1 dept filters, escalation=0.3",
+      "status": "\u2705",
+      "duration": "7.8s"
+    },
+    {
+      "step": 2,
+      "icon": "\ud83d\udccb",
+      "action": "Build Data Contract",
+      "detail": "Schema: 20 fields | Quality: fidelity\u22650.8, privacy \u03b5\u22645.0",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 3,
+      "icon": "\ud83d\udcca",
+      "action": "Profile Seed Dataset",
+      "detail": "Filtered: 464 records (Southlake Only) | Age: 18-92 | Depts: 9",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 4,
+      "icon": "\ud83e\udde0",
+      "action": "Strategy Selection",
+      "detail": "Selected: Constraint-Weighted Cohort Blender | Reasons: High constraint count (4 hard + 1 soft); Constraint reweighting gives precise control over target distributions",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 5,
+      "icon": "\ud83d\udd27",
+      "action": "Weighted Sampling",
+      "detail": "Sampled 500 from seed (n=464) with 5 constraints",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 5,
+      "icon": "\ud83d\udd00",
+      "action": "Perturbation + Hard Constraints",
+      "detail": "Perturbed 500 records (age\u00b13, dates\u00b130d, names shuffled, escalation aligned)",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 6,
+      "icon": "\ud83d\udd0d",
+      "action": "Structural Audit (Pass 1)",
+      "detail": "Verdict: PASS | Pass rate: 100.0% | Issues: 1",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 7,
+      "icon": "\ud83d\udd0d",
+      "action": "Plausibility Audit (Pass 2)",
+      "detail": "Fidelity: 0.91 | Utility: 67% | Elder plausible: True",
+      "status": "\u2705",
+      "duration": "0.0s"
+    },
+    {
+      "step": 8,
+      "icon": "\ud83d\udd12",
+      "action": "Privacy Audit",
+      "detail": "Risk: MEDIUM | Exact match: 11.3% | k-min: 1 | \u03b5\u22480.53",
+      "status": "\u2705",
+      "duration": "0.1s"
+    },
+    {
+      "step": 9,
+      "icon": "\ud83d\udd27",
+      "action": "Repair Loop Complete",
+      "detail": "Applied 2 repairs | New verdict: PASS | New privacy: MEDIUM",
+      "status": "\u2705",
+      "duration": "0.2s"
+    },
+    {
+      "step": 10,
+      "icon": "\ud83c\udfc1",
+      "action": "Pipeline Complete",
+      "detail": "Total: 8.2s | Records: 500 | Strategy: Constraint-Weighted Cohort Blender",
+      "status": "\u2705",
+      "duration": "8.2s"
+    }
+  ],
+  "audits": {
+    "structural": {
+      "pass_rate": 1.0,
+      "total_issues": 0,
+      "affected_cells": 0,
+      "auto_fixes": 0,
+      "issues": [],
+      "verdict": "PASS"
+    },
+    "plausibility": {
+      "fidelity": {
+        "age": 0.8390301133111162,
+        "department": 0.9129482758620688,
+        "primary_diagnosis": 0.8863275862068967,
+        "care_status": 0.9262931034482758,
+        "city": 0.9317586206896551,
+        "gender": 0.9500862068965517
+      },
+      "fidelity_mean": 0.9077406510690942,
+      "utility_checks": [
+        {
+          "constraint": "Escalation\u224830%",
+          "actual": "30.0%",
+          "satisfied": "True"
+        },
+        {
+          "constraint": "Age\u226565 majority",
+          "actual": "82.0%",
+          "satisfied": "True"
+        },
+        {
+          "constraint": "Dept focus",
+          "actual": "0.0%",
+          "satisfied": "False"
+        }
+      ],
+      "utility_pass_rate": 0.6666666666666666,
+      "elder_esc": 0.3121951219512195,
+      "young_esc": 0.24444444444444444,
+      "elder_plausible": "True",
+      "fu_by_age": {
+        "18-64": 2.022222222222222,
+        "65-84": 1.8961937716262975,
+        "85+": 2.2892561983471076
+      }
+    },
+    "privacy": {
+      "exact_match_count": 0,
+      "exact_match_rate": 0.0,
+      "exact_match_risk": "LOW",
+      "membership_qi_overlap": 19,
+      "membership_uniqueness": 0.9576837416481069,
+      "membership_risk": "LOW",
+      "k_anonymity_min": 1,
+      "k_anonymity_median": 1,
+      "attribute_disclosure_risk": "HIGH",
+      "dp_epsilon": 0.53,
+      "dp_note": "Strong privacy",
+      "overall_risk": "MEDIUM"
+    }
+  },
+  "records": 500,
+  "created_at": "2026-03-18 15:05:28"
+}
