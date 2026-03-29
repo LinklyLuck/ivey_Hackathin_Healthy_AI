@@ -4,13 +4,6 @@ By Qi Sun & Jia An · Advisor: Kaiyu Li
 
 Winner NO.2🏆, We got $2500 per-person.
 
-## Demo Video
-
-Project demo videos are available in the Releases section:
-
-- Demo 1
-- Demo 2
-
 > An agentic synthetic data creation and validation service for healthcare — built for the Ivey × Southlake Health Hackathon 2026.
 
 **One-liner:** Turn natural language requirements into auditable, FHIR-mapped healthcare datasets — and prove they work through real hospital operation simulations.
@@ -88,6 +81,12 @@ southlake/
 │   ├── patient_records.csv             # 3,000-record seed dataset
 │   ├── runs/                           # Generation run history
 ```
+## Demo Video
+
+Project demo videos are available in the Releases section:
+
+- Demo 1
+- Demo 2
 
 ## Safety & Compliance
 
