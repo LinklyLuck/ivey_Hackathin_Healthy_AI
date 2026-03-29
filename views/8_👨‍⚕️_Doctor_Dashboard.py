@@ -12,7 +12,7 @@ auth = require_login(st)
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #1E3A5F 0%, #2563EB 100%);">
-    <h1>👨‍⚕️ Clinical Queue Stress Test</h1>
+    <h1> Clinical Queue Stress Test</h1>
     <p>Validate synthetic cohort queue pressure, priority distribution, and case routing under simulated load.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -26,7 +26,7 @@ southlake = records[records["anchor_hospital"] == "Southlake Regional Health Cen
 # ═══════════════════════════════════════════
 #  TABS: Queue | Live Chat | Analytics
 # ═══════════════════════════════════════════
-tab_queue, tab_chat, tab_analytics = st.tabs(["📋 Patient Queue", "💬 Live Chat", "📈 Analytics"])
+tab_queue, tab_chat, tab_analytics = st.tabs([" Patient Queue", " Live Chat", " Analytics"])
 
 # ─── TAB 1: Queue ───
 with tab_queue:
@@ -48,9 +48,9 @@ with tab_queue:
         st.markdown(f"""
         <div class="metric-row">
             <div class="metric-card"><div class="number">{len(f)}</div><div class="label">Total</div></div>
-            <div class="metric-card"><div class="number" style="color:#DC2626">{red}</div><div class="label">🔴 Red</div></div>
-            <div class="metric-card"><div class="number" style="color:#EAB308">{yellow}</div><div class="label">🟡 Yellow</div></div>
-            <div class="metric-card"><div class="number" style="color:#22C55E">{green}</div><div class="label">🟢 Green</div></div>
+            <div class="metric-card"><div class="number" style="color:#DC2626">{red}</div><div class="label"> Red</div></div>
+            <div class="metric-card"><div class="number" style="color:#EAB308">{yellow}</div><div class="label"> Yellow</div></div>
+            <div class="metric-card"><div class="number" style="color:#22C55E">{green}</div><div class="label"> Green</div></div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -60,17 +60,18 @@ with tab_queue:
             column_config={"final_priority": st.column_config.ProgressColumn("Priority", min_value=0, max_value=100, format="%d")})
 
         # Case detail
-        st.markdown("### 🔍 Case Detail")
-        names = f["patient_name"].tolist()
-        if names:
-            sel = st.selectbox("Select patient:", names, key="dq_sel")
-            s = f[f["patient_name"]==sel].iloc[0]
+        st.markdown("###  Case Detail")
+        options = [f"{r['queue_id']} — {r['patient_name']}" for _, r in f.iterrows()]
+        if options:
+            sel = st.selectbox("Select patient:", options, key="dq_sel")
+            sel_qid = sel.split(" — ")[0].strip()
+            s = f[f["queue_id"]==sel_qid].iloc[0]
             level = s["risk_level"]
-            circle = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(level,"⚪")
+            circle = {"Green":"","Yellow":"","Red":""}.get(level,"")
             c1, c2 = st.columns([2,1])
             with c1:
                 st.markdown(f'<div class="case-card case-card-{level.lower()}"><div style="display:flex;justify-content:space-between;"><h3 style="margin:0">{s["patient_name"]}</h3><span class="badge badge-{level.lower()}">{circle} {level}</span></div><hr style="border-color:#E2E8F0;"><p><strong>Case:</strong> {s["case_id"]} | <strong>Age:</strong> {s["age"]} | <strong>Dept:</strong> {s["department"]}</p><p><strong>Complaint:</strong> {s["complaint_summary"]}</p><p><strong>Priority:</strong> {s["final_priority"]}/100</p></div>', unsafe_allow_html=True)
-                if st.button(f"📋 Start Chart for {s['patient_name']}", type="primary", key=f"chart_{sel}"):
+                if st.button(f" Start Chart for {s['patient_name']}", type="primary", key=f"chart_{sel}"):
                     st.success(f"Chart started for {s['patient_name']} — Case {s['case_id']}. Ready for clinical documentation.")
             with c2:
                 fig = go.Figure(go.Indicator(mode="gauge+number", value=s["final_priority"], title={"text":"Priority"},
@@ -80,7 +81,7 @@ with tab_queue:
 
 # ─── TAB 2: Live Chat ───
 with tab_chat:
-    st.markdown("### 💬 Patient Consultations")
+    st.markdown("###  Patient Consultations")
 
     sessions = list_active_sessions()
 
@@ -88,11 +89,11 @@ with tab_chat:
         st.info("No active consultations. Patients can start a consultation from the Live Doctor page.")
     else:
         # Session list
-        status_icons = {"ai_collecting": "🤖", "waiting_doctor": "⏳", "active": "💬", "closed": "✅"}
+        status_icons = {"ai_collecting": "", "waiting_doctor": "⏳", "active": "", "closed": ""}
         session_labels = []
         session_map = {}
         for s in sessions:
-            icon = status_icons.get(s["status"], "❓")
+            icon = status_icons.get(s["status"], "")
             label = f"{icon} {s['patient_name']} — {s['status']} ({s['message_count']} msgs)"
             session_labels.append(label)
             session_map[label] = s["session_id"]
@@ -108,7 +109,7 @@ with tab_chat:
 
             st.markdown(f"""
             <div class="info-panel">
-                👤 <strong>{data['patient_name']}</strong> | Age: {info.get('age','N/A')} |
+                 <strong>{data['patient_name']}</strong> | Age: {info.get('age','N/A')} |
                 History: {info.get('history','None')} | Status: <strong>{status}</strong>
             </div>
             """, unsafe_allow_html=True)
@@ -117,7 +118,7 @@ with tab_chat:
             if data.get("ai_summary"):
                 summary = data["ai_summary"]
                 level = summary.get("risk_level", "Yellow")
-                circle = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(level,"🟡")
+                circle = {"Green":"","Yellow":"","Red":""}.get(level,"")
                 st.markdown(f"#### {circle} AI Clinical Summary")
                 summary_df = pd.DataFrame([
                     {"Field": "Chief Complaint", "Value": summary.get("chief_complaint", "N/A")},
@@ -135,19 +136,19 @@ with tab_chat:
             st.markdown("#### Chat History")
             for msg in data["messages"]:
                 if msg["role"] == "patient":
-                    with st.chat_message("user", avatar="🧑"):
+                    with st.chat_message("user", avatar=""):
                         st.markdown(f"**{msg.get('sender','Patient')}** ({msg.get('time','')}): {msg['content']}")
                 elif msg["role"] == "ai":
-                    with st.chat_message("assistant", avatar="🤖"):
+                    with st.chat_message("assistant", avatar=""):
                         st.markdown(f"*AI ({msg.get('time','')}): {msg['content']}*")
                 elif msg["role"] == "doctor":
-                    with st.chat_message("assistant", avatar="👨‍⚕️"):
+                    with st.chat_message("assistant", avatar=""):
                         st.markdown(f"**Dr. ({msg.get('time','')}):** {msg['content']}")
 
             # Doctor reply input
             if status in ("waiting_doctor", "active"):
                 if status == "waiting_doctor":
-                    if st.button("✅ Accept & Start Chat", type="primary"):
+                    if st.button(" Accept & Start Chat", type="primary"):
                         update_status(selected_sid, "active")
                         add_message(selected_sid, "doctor", f"Hello {data['patient_name']}, please wait a moment — let me review the AI-collected information about your visit.", "Doctor")
                         st.rerun()
@@ -159,10 +160,10 @@ with tab_chat:
 
                     c1, c2 = st.columns(2)
                     with c1:
-                        if st.button("🔄 Refresh", use_container_width=True):
+                        if st.button(" Refresh", use_container_width=True):
                             st.rerun()
                     with c2:
-                        if st.button("💾 Save Case Record", use_container_width=True):
+                        if st.button(" Save Case Record", use_container_width=True):
                             from utils.storage import append_row_csv, get_next_id, now_str
                             case_data = data.get("ai_summary", {})
                             append_row_csv("cases.csv", {
@@ -175,11 +176,11 @@ with tab_chat:
                                 "department": case_data.get("suggested_department","General"),
                                 "structured_answers": "live_doctor_session", "timestamp": now_str(), "status": "completed"
                             })
-                            st.success("✅ Case record saved to cases.csv")
+                            st.success(" Case record saved to cases.csv")
 
             elif status == "closed":
-                st.success("✅ This consultation has been closed by the patient.")
-                if st.button("💾 Save Case Record", key="save_closed", use_container_width=True):
+                st.success(" This consultation has been closed by the patient.")
+                if st.button(" Save Case Record", key="save_closed", use_container_width=True):
                     from utils.storage import append_row_csv, now_str
                     case_data = data.get("ai_summary", {})
                     append_row_csv("cases.csv", {
@@ -192,20 +193,30 @@ with tab_chat:
                         "department": case_data.get("suggested_department","General"),
                         "structured_answers": "live_doctor_session", "timestamp": now_str(), "status": "completed"
                     })
-                    st.success("✅ Case record saved.")
+                    st.success(" Case record saved.")
 
 # ─── TAB 3: Analytics ───
 with tab_analytics:
-    if not queue.empty:
+    if st.button(" Refresh Analytics", key="analytics_refresh"):
+        st.rerun()
+    # Reload fresh data
+    queue_fresh = load_doctor_queue()
+    cases_fresh = load_cases()
+    if not queue_fresh.empty:
         c1, c2 = st.columns(2)
         with c1:
-            r = queue["risk_level"].value_counts().reset_index(); r.columns = ["Risk","Count"]
+            r = queue_fresh["risk_level"].value_counts().reset_index(); r.columns = ["Risk","Count"]
             st.plotly_chart(px.pie(r, names="Risk", values="Count", color="Risk", color_discrete_map={"Red":"#EF4444","Yellow":"#EAB308","Green":"#22C55E"}, title="Risk Distribution"), use_container_width=True)
         with c2:
-            d = queue["department"].value_counts().reset_index(); d.columns = ["Dept","Cases"]
+            d = queue_fresh["department"].value_counts().reset_index(); d.columns = ["Dept","Cases"]
             st.plotly_chart(px.bar(d, x="Cases", y="Dept", orientation="h", title="By Department", color_discrete_sequence=["#0066CC"]), use_container_width=True)
 
+    # Show all cases including live doctor saved cases
+    if not cases_fresh.empty:
+        st.markdown("###  All Cases (including Live Doctor)")
+        st.dataframe(format_risk_column(cases_fresh), use_container_width=True, hide_index=True)
+
     if not southlake.empty:
-        st.markdown("### 🔴 Escalated Patients (DB)")
+        st.markdown("###  Escalated Patients (DB)")
         esc = southlake[southlake["care_status"]=="Escalated"].sort_values("age", ascending=False)
         st.dataframe(esc[["record_id","patient_name","age","department","primary_diagnosis","medication_plan","attending_physician","care_status"]].head(30), use_container_width=True, hide_index=True)

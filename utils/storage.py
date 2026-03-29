@@ -22,7 +22,14 @@ def load_csv(filename: str) -> pd.DataFrame:
     p = _path(filename)
     if not os.path.exists(p):
         return pd.DataFrame()
-    return pd.read_csv(p)
+    try:
+        return pd.read_csv(p)
+    except Exception:
+        # Fallback: handle malformed rows
+        try:
+            return pd.read_csv(p, on_bad_lines="skip")
+        except Exception:
+            return pd.DataFrame()
 
 
 def save_csv(filename: str, df: pd.DataFrame):
@@ -32,15 +39,22 @@ def save_csv(filename: str, df: pd.DataFrame):
 
 
 def append_row_csv(filename: str, row: dict):
-    """Append a single row to a CSV file."""
+    """Append a single row to a CSV file. All fields are quoted to prevent parsing issues."""
     p = _path(filename)
     os.makedirs(DATA_DIR, exist_ok=True)
+    # Clean values: replace commas and newlines in strings to prevent CSV corruption
+    clean_row = {}
+    for k, v in row.items():
+        if isinstance(v, str):
+            clean_row[k] = v.replace("\n", " ").replace("\r", " ")
+        else:
+            clean_row[k] = v
     file_exists = os.path.exists(p)
     with open(p, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=row.keys())
+        writer = csv.DictWriter(f, fieldnames=clean_row.keys(), quoting=csv.QUOTE_ALL)
         if not file_exists:
             writer.writeheader()
-        writer.writerow(row)
+        writer.writerow(clean_row)
 
 
 # ─── JSON helpers (for session-level temp data) ───

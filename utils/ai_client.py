@@ -10,7 +10,7 @@ from openai import OpenAI
 # ═══════════════════════════════════════════
 #  PUT YOUR API KEY HERE
 # ═══════════════════════════════════════════
-API_KEY = "xxxxx"
+API_KEY = "sk-b2529389ef1544708fd9804ab0f521ca"
 BASE_URL = "https://api.deepseek.com"
 MODEL = "deepseek-chat"
 # ═══════════════════════════════════════════

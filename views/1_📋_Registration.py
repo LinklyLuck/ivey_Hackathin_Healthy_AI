@@ -9,7 +9,7 @@ inject_css()
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #0052A5 0%, #2563EB 100%);">
-    <h1>📋 AI-Assisted Registration</h1>
+    <h1> AI-Assisted Registration</h1>
     <p>Reduce front-desk administrative burden by converting conversational input into structured patient records.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -17,12 +17,12 @@ st.markdown("""
 if "ai_extracted" not in st.session_state:
     st.session_state.ai_extracted = None
 
-tab1, tab2 = st.tabs(["🤖 AI-Assisted Entry", "📝 Manual Form"])
+tab1, tab2 = st.tabs([" AI-Assisted Entry", " Manual Form"])
 
 with tab1:
     st.markdown("""
     <div class="info-panel">
-        💡 <strong>How it works:</strong> Type your information naturally — the AI will extract structured fields automatically.
+         <strong>How it works:</strong> Type your information naturally — the AI will extract structured fields automatically.
         You can review and edit before submitting.
     </div>
     """, unsafe_allow_html=True)
@@ -33,7 +33,7 @@ with tab1:
         height=150,
     )
 
-    if st.button("🤖 Extract with AI", type="primary") and user_input.strip():
+    if st.button(" Extract with AI", type="primary") and user_input.strip():
         with st.spinner("AI is analyzing your input..."):
             result = ai_extract_registration(user_input)
         if result:
@@ -66,11 +66,11 @@ with tab1:
 
         missing = data.get("missing_fields", [])
         if missing:
-            st.warning(f"⚠️ Missing fields: {', '.join(missing)}")
+            st.warning(f" Missing fields: {', '.join(missing)}")
 
         consent = st.checkbox("I consent that this system is for information collection and workflow support only.", key="ai_consent")
 
-        if st.button("✅ Confirm & Register", type="primary", key="ai_submit"):
+        if st.button(" Confirm & Register", type="primary", key="ai_submit"):
             if not consent:
                 st.error("Please provide consent.")
             elif not full_name:
@@ -90,7 +90,7 @@ with tab1:
                     "registered_at": now_str(),
                 }
                 append_row_csv("patients.csv", row)
-                st.success(f"✅ Registration successful! Patient ID: **{pid}**")
+                st.success(f" Registration successful! Patient ID: **{pid}**")
                 st.session_state.ai_extracted = None
 
 with tab2:
@@ -127,4 +127,4 @@ with tab2:
                 "emergency_contact": m_emerg, "emergency_phone": "", "registered_at": now_str(),
             }
             append_row_csv("patients.csv", row)
-            st.success(f"✅ Registration successful! Patient ID: **{pid}**")
+            st.success(f" Registration successful! Patient ID: **{pid}**")

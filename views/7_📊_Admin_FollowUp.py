@@ -14,10 +14,15 @@ inject_css()
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #065F46 0%, #059669 100%);">
-    <h1>📊 Post-Discharge Follow-Up Simulation</h1>
+    <h1> Post-Discharge Follow-Up Simulation</h1>
     <p>Validate synthetic cohort follow-up risk classification, transport demand, and clinician review workload.</p>
 </div>
 """, unsafe_allow_html=True)
+
+c_ref1, c_ref2 = st.columns([4, 1])
+with c_ref2:
+    if st.button(" Refresh All", key="fu_global_refresh", use_container_width=True):
+        st.rerun()
 
 fu = load_followup_results()
 cases = load_cases()
@@ -37,9 +42,9 @@ pending = len(fu[fu["clinician_review_status"]=="Pending"]) if not fu.empty and 
 st.markdown(f"""
 <div class="metric-row">
     <div class="metric-card"><div class="number">{total_fu}</div><div class="label">Total Follow-ups</div></div>
-    <div class="metric-card"><div class="number" style="color:#DC2626">{red}</div><div class="label">🔴 Red</div></div>
-    <div class="metric-card"><div class="number" style="color:#EAB308">{yellow}</div><div class="label">🟡 Yellow</div></div>
-    <div class="metric-card"><div class="number" style="color:#22C55E">{green}</div><div class="label">🟢 Green</div></div>
+    <div class="metric-card"><div class="number" style="color:#DC2626">{red}</div><div class="label"> Red</div></div>
+    <div class="metric-card"><div class="number" style="color:#EAB308">{yellow}</div><div class="label"> Yellow</div></div>
+    <div class="metric-card"><div class="number" style="color:#22C55E">{green}</div><div class="label"> Green</div></div>
     <div class="metric-card"><div class="number" style="color:#EA580C">{pending}</div><div class="label">⏳ Pending</div></div>
 </div>
 """, unsafe_allow_html=True)
@@ -47,7 +52,7 @@ st.markdown(f"""
 # ═══════════════════════════════════════════
 #  Tabs: Analytics | Case Management | History
 # ═══════════════════════════════════════════
-tab_analytics, tab_manage, tab_history = st.tabs(["📈 Analytics", "🔧 Case Management", "📁 Follow-Up History"])
+tab_analytics, tab_manage, tab_history = st.tabs([" Analytics", " Case Management", " Follow-Up History"])
 
 with tab_analytics:
     if not fu.empty:
@@ -73,7 +78,7 @@ with tab_analytics:
 with tab_manage:
     st.markdown("### Select a Case for Follow-Up Assessment")
 
-    tab_d, tab_r = st.tabs(["📄 Discharge Summaries", "📊 Patient Records (Escalated/Monitoring)"])
+    tab_d, tab_r = st.tabs([" Discharge Summaries", " Patient Records (Escalated/Monitoring)"])
 
     with tab_d:
         if discharge.empty:
@@ -83,7 +88,7 @@ with tab_manage:
             sel = st.selectbox("Choose case:", opts, key="adm_fu_d")
             sel_id = sel.split(" — ")[0]
             dr = discharge[discharge["case_id"]==sel_id].iloc[0]
-            st.markdown(f'<div class="case-card"><h3>📄 {sel_id}</h3><p><strong>Diagnosis:</strong> {dr["diagnosis_summary"]}</p><p><strong>Medications:</strong> {dr["medications"]}</p><p><strong>Instructions:</strong> {dr["discharge_instructions"]}</p></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="case-card"><h3> {sel_id}</h3><p><strong>Diagnosis:</strong> {dr["diagnosis_summary"]}</p><p><strong>Medications:</strong> {dr["medications"]}</p><p><strong>Instructions:</strong> {dr["discharge_instructions"]}</p></div>', unsafe_allow_html=True)
             st.session_state["adm_fu_dr"] = dr; st.session_state["adm_fu_cid"] = sel_id
 
     with tab_r:
@@ -98,7 +103,7 @@ with tab_manage:
             if rl:
                 sel_r = st.selectbox("Choose patient:", list(rl.keys()), key="adm_fu_r")
                 rr = rl[sel_r]
-                st.markdown(f'<div class="case-card {"case-card-red" if rr["care_status"]=="Escalated" else "case-card-yellow"}"><h3>👤 {rr["patient_name"]} ({rr["record_id"]})</h3><p>Age: {rr["age"]} | {rr["primary_diagnosis"]} | Meds: {rr["medication_plan"]} | Goal: {rr["next_visit_goal"]}</p></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="case-card {"case-card-red" if rr["care_status"]=="Escalated" else "case-card-yellow"}"><h3> {rr["patient_name"]} ({rr["record_id"]})</h3><p>Age: {rr["age"]} | {rr["primary_diagnosis"]} | Meds: {rr["medication_plan"]} | Goal: {rr["next_visit_goal"]}</p></div>', unsafe_allow_html=True)
                 st.session_state["adm_fu_dr"] = pd.Series({"case_id":rr["record_id"],"diagnosis_summary":rr["primary_diagnosis"],"medications":rr["medication_plan"],"discharge_instructions":f"Goal: {rr['next_visit_goal']}. Program: {rr['care_program']}.","attending_service":rr["department"],"discharge_date":rr["last_visit_date"]})
                 st.session_state["adm_fu_cid"] = rr["record_id"]
 
@@ -119,9 +124,9 @@ with tab_manage:
         # ─── Generate + Edit buttons side by side ───
         c_gen, c_edit = st.columns(2)
         with c_gen:
-            gen_clicked = st.button("🤖 Generate AI Questionnaire", type="primary", key="adm_gen_q", use_container_width=True)
+            gen_clicked = st.button(" Generate AI Questionnaire", type="primary", key="adm_gen_q", use_container_width=True)
         with c_edit:
-            edit_clicked = st.button("✏️ Edit Questions", key="adm_edit_q_top", use_container_width=True)
+            edit_clicked = st.button(" Edit Questions", key="adm_edit_q_top", use_container_width=True)
 
         if edit_clicked:
             if "adm_fu_qlist" not in st.session_state or not st.session_state["adm_fu_qlist"]:
@@ -163,18 +168,18 @@ with tab_manage:
 
             if not st.session_state.get("adm_fu_editing"):
                 # ═══ VIEW MODE ═══
-                st.markdown("### 📋 Follow-Up Questions")
+                st.markdown("###  Follow-Up Questions")
                 for i, txt in enumerate(qlist):
                     st.markdown(f"""<div style="padding:0.7rem 1rem;margin:0.4rem 0;background:#F8FAFC;border-left:3px solid #3B82F6;border-radius:6px;font-size:1rem;">
                         <strong style="color:#2563EB;">Q{i+1}.</strong> {txt}</div>""", unsafe_allow_html=True)
                 st.markdown("")
                 c1, c2 = st.columns(2)
                 with c1:
-                    if st.button("✏️ Edit Questions", key="adm_edit_q", use_container_width=True):
+                    if st.button(" Edit Questions", key="adm_edit_q", use_container_width=True):
                         st.session_state["adm_fu_editing"] = True
                         st.rerun()
                 with c2:
-                    if st.button("📤 Send Questionnaire to Patient", type="primary", key="adm_send_q", use_container_width=True):
+                    if st.button(" Send Questionnaire to Patient", type="primary", key="adm_send_q", use_container_width=True):
                         import json as _json
                         q_path = os.path.join(DATA_DIR, "followup_questions.json")
                         existing = {}
@@ -185,28 +190,29 @@ with tab_manage:
                         existing[cid] = {"questions": qlist, "sent_at": now_str(), "status": "pending"}
                         with open(q_path, "w") as f:
                             _json.dump(existing, f, indent=2)
-                        st.success(f"✅ Questionnaire ({len(qlist)} questions) sent to case {cid}!")
+                        st.success(f" Questionnaire ({len(qlist)} questions) sent to case **{cid}**!")
+                        st.markdown(f'<div style="padding:0.8rem;background:#FFFBEB;border:2px solid #F59E0B;border-radius:8px;text-align:center;"><strong>Patient should enter this Case Number in Follow-Up:</strong><br><span style="font-size:1.5rem;font-weight:800;color:#DC2626;">{cid}</span></div>', unsafe_allow_html=True)
             else:
                 # ═══ EDIT MODE ═══
-                st.markdown("### ✏️ Edit Questions")
+                st.markdown("###  Edit Questions")
                 st.markdown('<div class="info-panel">Modify existing questions, then add new ones or send directly.</div>', unsafe_allow_html=True)
                 edited = []
                 for i, txt in enumerate(qlist):
                     val = st.text_input(f"Q{i+1}", value=txt, key=f"adm_eq_{i}")
                     edited.append(val)
                 st.markdown("---")
-                new_q = st.text_input("➕ Add new question:", placeholder="Type a new follow-up question...", key="adm_new_q")
+                new_q = st.text_input(" Add new question:", placeholder="Type a new follow-up question...", key="adm_new_q")
                 st.markdown("")
                 c1, c2 = st.columns(2)
                 with c1:
-                    if st.button("➕ Add & Continue Editing", key="adm_add_more", use_container_width=True):
+                    if st.button(" Add & Continue Editing", key="adm_add_more", use_container_width=True):
                         saved = [q for q in edited if q.strip()]
                         if new_q.strip():
                             saved.append(new_q.strip())
                         st.session_state["adm_fu_qlist"] = saved
                         st.rerun()
                 with c2:
-                    if st.button("📤 Send Questionnaire to Patient", type="primary", key="adm_save_send", use_container_width=True):
+                    if st.button(" Send Questionnaire to Patient", type="primary", key="adm_save_send", use_container_width=True):
                         saved = [q for q in edited if q.strip()]
                         if new_q.strip():
                             saved.append(new_q.strip())
@@ -222,19 +228,20 @@ with tab_manage:
                         existing[cid] = {"questions": saved, "sent_at": now_str(), "status": "pending"}
                         with open(q_path, "w") as f:
                             _json.dump(existing, f, indent=2)
-                        st.success(f"✅ Questionnaire ({len(saved)} questions) sent to case {cid}!")
+                        st.success(f" Questionnaire ({len(saved)} questions) sent to case **{cid}**!")
+                        st.markdown(f'<div style="padding:0.8rem;background:#FFFBEB;border:2px solid #F59E0B;border-radius:8px;text-align:center;"><strong>Patient should enter:</strong> <span style="font-size:1.5rem;font-weight:800;color:#DC2626;">{cid}</span></div>', unsafe_allow_html=True)
                         st.rerun()
 
         if st.session_state.get("adm_fu_ai",{}).get("monitoring_summary"):
-            st.markdown(f'<div class="info-panel">🤖 <strong>AI Focus:</strong> {st.session_state["adm_fu_ai"]["monitoring_summary"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="info-panel"> <strong>AI Focus:</strong> {st.session_state["adm_fu_ai"]["monitoring_summary"]}</div>', unsafe_allow_html=True)
 
 with tab_history:
     c_title, c_refresh = st.columns([3, 1])
     with c_title:
-        st.markdown("### 📁 All Follow-Up Records")
+        st.markdown("###  All Follow-Up Records")
     with c_refresh:
         st.markdown("<br>", unsafe_allow_html=True)
-        if st.button("🔄 Refresh", key="hist_refresh", use_container_width=True):
+        if st.button(" Refresh", key="hist_refresh", use_container_width=True):
             st.rerun()
 
     fu_fresh = load_followup_results()
@@ -250,26 +257,26 @@ with tab_history:
             fu_display = fu_display.sort_values("_sort").drop(columns=["_sort"])
 
         # Add marking column
-        fu_display.insert(0, "✅ Mark", False)
+        fu_display.insert(0, " Mark", False)
         edited_fu = st.data_editor(
             format_risk_column(fu_display),
             use_container_width=True, hide_index=True, key="fu_hist_editor",
             disabled=[c for c in display_cols],
-            column_config={"✅ Mark": st.column_config.CheckboxColumn("✅", default=False)},
+            column_config={" Mark": st.column_config.CheckboxColumn("", default=False)},
         )
-        marked = edited_fu[edited_fu["✅ Mark"] == True]
+        marked = edited_fu[edited_fu[" Mark"] == True]
         if not marked.empty:
             st.info(f"Marked {len(marked)} record(s) for review.")
 
         # ─── Patient Submission Viewer ───
         st.markdown("---")
-        st.markdown("### 🔍 Review Patient Submission")
+        st.markdown("###  Review Patient Submission")
         pending = fu_fresh[fu_fresh["clinician_review_status"] == "Pending"] if "clinician_review_status" in fu_fresh.columns else fu_fresh
         if not pending.empty:
             options = []
             for _, r in fu_fresh.iterrows():
-                status_icon = "⏳" if r.get("clinician_review_status") == "Pending" else "✅"
-                risk_icon = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(r.get("risk_level",""),"⚪")
+                status_icon = "⏳" if r.get("clinician_review_status") == "Pending" else ""
+                risk_icon = {"Green":"","Yellow":"","Red":""}.get(r.get("risk_level",""),"")
                 options.append(f"{status_icon} {r.get('followup_id','')} — {r.get('case_id','')} | {risk_icon} {r.get('risk_level','')} | {r.get('followup_date','')}")
 
             sel_hist = st.selectbox("Select a submission to review:", options, key="hist_sel")
@@ -277,8 +284,8 @@ with tab_history:
             sel_row = fu_fresh.iloc[sel_idx]
 
             # Show patient's answers
-            st.markdown(f"#### 📋 Patient Submission: {sel_row.get('followup_id','')}")
-            risk_icon = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(sel_row.get("risk_level",""),"⚪")
+            st.markdown(f"####  Patient Submission: {sel_row.get('followup_id','')}")
+            risk_icon = {"Green":"","Yellow":"","Red":""}.get(sel_row.get("risk_level",""),"")
             st.markdown(f'<div class="info-panel"><strong>Case:</strong> {sel_row.get("case_id","")} | <strong>Patient:</strong> {sel_row.get("patient_id","")} | <strong>Date:</strong> {sel_row.get("followup_date","")} | <strong>Risk:</strong> {risk_icon} {sel_row.get("risk_level","")} | <strong>Score:</strong> {sel_row.get("risk_score","")}</div>', unsafe_allow_html=True)
 
             # Parse standard answers
@@ -288,7 +295,7 @@ with tab_history:
                 for item in qa_str.split(";"):
                     if "=" in item:
                         k, v = item.split("=", 1)
-                        icon = "✅" if v.strip().lower() == "true" else "❌" if v.strip().lower() == "false" else f"**{v.strip()}**"
+                        icon = "" if v.strip().lower() == "true" else "" if v.strip().lower() == "false" else f"**{v.strip()}**"
                         label = k.strip().replace("_", " ").title()
                         st.markdown(f"- {label}: {icon}")
 
@@ -305,55 +312,61 @@ with tab_history:
             if pn and pn != "nan" and pn.strip():
                 st.markdown(f"**Patient Notes:** {pn}")
 
-            # ─── Admin Clinical Assessment ───
+            # ─── Clinician Assessment ───
             st.markdown("---")
-            st.markdown("### 👨‍⚕️ Clinician Assessment")
+            st.markdown("###  Clinician Assessment")
 
-            c1, c2 = st.columns(2)
-            with c1:
-                h_pain = st.slider("Pain (0-10)", 0, 10, 2, key="hist_fp")
-                h_fever = st.checkbox("Fever", key="hist_ff")
-                h_sob = st.checkbox("Shortness of breath", key="hist_fs")
-                h_bsh = st.checkbox("Blood sugar high", key="hist_fb")
-            with c2:
-                h_bpa = st.checkbox("BP abnormal", key="hist_fbp")
-                h_o2 = st.checkbox("O2 < 94%", key="hist_fo")
-                h_worse = st.checkbox("Worse", key="hist_fw")
-                h_new = st.checkbox("New symptoms", key="hist_fn")
-                h_med = st.checkbox("Med non-compliant", key="hist_fm")
-                h_wound = st.checkbox("Wound issue", key="hist_fwd")
+            recovery = st.select_slider("Recovery Level", options=["Critical", "Poor", "Fair", "Good", "Excellent"], value="Fair", key="hist_recovery")
+            medical_report = st.text_area(" Clinician Medical Report / Notes:", height=120, key="hist_report", placeholder="Write your clinical assessment, treatment plan, and any follow-up instructions here...")
 
-            h_family = st.checkbox("Family transport available", key="hist_fam")
-            medical_report = st.text_area("📝 Clinician Medical Report / Notes:", height=120, key="hist_report", placeholder="Write your clinical assessment, treatment plan, and any follow-up instructions here...")
+            st.markdown("**Action Decision:**")
+            c1, c2, c3, c4 = st.columns(4)
+            fuid = sel_row.get("followup_id", "")
+            case_id_val = sel_row.get("case_id", "")
+            patient_id_val = sel_row.get("patient_id", "")
 
-            if st.button("⚡ Run Assessment & Update Record", type="primary", key="hist_assess", use_container_width=True):
-                h_answers = {"pain_level":h_pain,"fever":h_fever,"shortness_of_breath":h_sob,"blood_sugar_high":h_bsh,"blood_pressure_abnormal":h_bpa,"oxygen_low":h_o2,"worse_than_before":h_worse,"new_symptoms":h_new,"medication_noncompliant":h_med,"wound_issue":h_wound}
-                h_result = classify_followup(h_answers)
-                h_level = h_result["level"]
-                h_transport = recommend_transport(h_level, h_family, h_sob and h_o2)
-                h_circle = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(h_level,"⚪")
-
-                st.markdown(risk_banner(h_level, f"{h_circle} {risk_circle(h_level)} — {h_result['urgency']}"), unsafe_allow_html=True)
-
-                # Update the record in CSV
-                import csv
+            def _update_record(action, level, transport_level):
                 csv_path = os.path.join(DATA_DIR, "followup_results.csv")
                 if os.path.exists(csv_path):
-                    df_update = pd.read_csv(csv_path)
-                    fuid = sel_row.get("followup_id", "")
-                    mask = df_update["followup_id"] == fuid
-                    if mask.any():
-                        df_update.loc[mask, "risk_level"] = h_level
-                        df_update.loc[mask, "risk_score"] = h_result["score"]
-                        df_update.loc[mask, "clinician_review_status"] = "Reviewed"
-                        df_update.loc[mask, "recommended_action"] = h_result["action"]
-                        if "clinician_report" not in df_update.columns:
-                            df_update["clinician_report"] = ""
-                        df_update.loc[mask, "clinician_report"] = medical_report
-                        df_update.to_csv(csv_path, index=False)
-                        st.success(f"✅ Record **{fuid}** updated: Risk → {h_circle} {h_level} | Score → {h_result['score']} | Status → Reviewed")
-                    else:
-                        st.warning("Record not found for update.")
+                    try:
+                        df_up = pd.read_csv(csv_path, on_bad_lines="skip")
+                    except:
+                        df_up = pd.DataFrame()
+                    if not df_up.empty:
+                        mask = df_up["followup_id"] == fuid
+                        if mask.any():
+                            df_up.loc[mask, "risk_level"] = level
+                            df_up.loc[mask, "clinician_review_status"] = "Reviewed"
+                            df_up.loc[mask, "recommended_action"] = action
+                            df_up.loc[mask, "transport_level"] = transport_level
+                            if "clinician_report" not in df_up.columns:
+                                df_up["clinician_report"] = ""
+                            df_up.loc[mask, "clinician_report"] = medical_report
+                            if "recovery_level" not in df_up.columns:
+                                df_up["recovery_level"] = ""
+                            df_up.loc[mask, "recovery_level"] = recovery
+                            df_up.to_csv(csv_path, index=False)
+
+            with c1:
+                if st.button(" Callback", key="act_callback", use_container_width=True):
+                    _update_record("Schedule phone callback", "Yellow", "None")
+                    st.success(f" **{fuid}** →  Callback scheduled. Sent to Operations.")
+                    st.rerun()
+            with c2:
+                if st.button(" Shuttle", key="act_shuttle", use_container_width=True):
+                    _update_record("Arrange shuttle transport to hospital", "Red", "Red-LEVEL2")
+                    st.success(f" **{fuid}** →  Shuttle dispatched. Sent to Operations.")
+                    st.rerun()
+            with c3:
+                if st.button(" Emergency", key="act_emergency", use_container_width=True):
+                    _update_record("Emergency ambulance dispatch", "Red", "Red-LEVEL3")
+                    st.success(f" **{fuid}** →  Emergency. Sent to Operations.")
+                    st.rerun()
+            with c4:
+                if st.button(" Recovered", type="primary", key="act_recovered", use_container_width=True):
+                    _update_record("Patient recovered — no further action", "Green", "None")
+                    st.success(f" **{fuid}** → Patient recovered. Case closed.")
+                    st.rerun()
         else:
             st.info("No submissions to review.")
     else:

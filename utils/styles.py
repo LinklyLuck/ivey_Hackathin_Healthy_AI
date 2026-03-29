@@ -270,9 +270,9 @@ def risk_badge(level: str) -> str:
 def risk_circle(level: str) -> str:
     """Return colored circle emoji + label for risk level."""
     mapping = {
-        "Green": "🟢 Green / Low",
-        "Yellow": "🟡 Yellow / Moderate",
-        "Red": "🔴 Red / Urgent",
+        "Green": " Green / Low",
+        "Yellow": " Yellow / Moderate",
+        "Red": " Red / Urgent",
     }
     return mapping.get(level, level)
 
@@ -280,9 +280,9 @@ def risk_circle(level: str) -> str:
 def risk_circle_short(level: str) -> str:
     """Return colored circle emoji + short label."""
     mapping = {
-        "Green": "🟢 Green",
-        "Yellow": "🟡 Yellow",
-        "Red": "🔴 Red",
+        "Green": " Green",
+        "Yellow": " Yellow",
+        "Red": " Red",
     }
     return mapping.get(level, level)
 

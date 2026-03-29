@@ -10,12 +10,12 @@ inject_css()
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #7C3AED 0%, #A855F7 50%, #C084FC 100%);">
-    <h1>💬 Live Doctor Consultation</h1>
+    <h1> Live Doctor Consultation</h1>
     <p>Chat with AI to describe symptoms → AI generates summary → Connect with a real doctor online.</p>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="disclaimer"><strong>⚠️ Important:</strong> AI collects information only — does <strong>not</strong> diagnose. For emergencies, call <strong>911</strong>.</div>', unsafe_allow_html=True)
+st.markdown('<div class="disclaimer"><strong> Important:</strong> AI collects information only — does <strong>not</strong> diagnose. For emergencies, call <strong>911</strong>.</div>', unsafe_allow_html=True)
 
 auth = st.session_state.get("auth", {})
 
@@ -33,26 +33,32 @@ if st.session_state.ld_phase == "info":
     st.markdown("### Patient Information")
     records = load_patient_records()
     patients = load_patients()
-    # Search by OHIP/UHIP
-    c_search, c_btn = st.columns([3, 1])
-    with c_search:
-        search_num = st.text_input("Enter your OHIP / UHIP Number:", placeholder="e.g. 4795352975", key="ld_search")
+    # Search by OHIP/UHIP + Email
+    c_ins, c_email, c_btn = st.columns([2, 2, 1])
+    with c_ins:
+        search_num = st.text_input("OHIP / UHIP Number:", placeholder="e.g. 4795352975", key="ld_search")
+    with c_email:
+        search_email = st.text_input("Email (verification):", placeholder="e.g. m.thompson@email.com", key="ld_email")
     with c_btn:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.button("🔍 Search", key="ld_search_btn", use_container_width=True)
+        st.button(" Search", key="ld_search_btn", use_container_width=True)
 
     p_name, p_age, p_id, p_history = "", 35, None, ""
     patient_found = False
 
-    if search_num.strip():
-        if not patients.empty and "insurance_number" in patients.columns:
-            match = patients[patients["insurance_number"].astype(str).str.contains(search_num.strip(), case=False, na=False)]
+    if search_num.strip() and search_email.strip():
+        q = search_num.strip()
+        eq = search_email.strip().lower()
+        if not patients.empty and "insurance_number" in patients.columns and "email" in patients.columns:
+            ins_match = patients[patients["insurance_number"].astype(str).str.contains(q, case=False, na=False)]
+            if not ins_match.empty:
+                match = ins_match[ins_match["email"].astype(str).str.lower().str.contains(eq, na=False)]
             if not match.empty:
                 r = match.iloc[0]
                 p_name, p_age, p_id = r["full_name"], int(r["age"]), r["patient_id"]
                 p_history = str(r.get("past_medical_history", ""))
                 patient_found = True
-                st.markdown(f'<div class="info-panel">✅ <strong>Patient Found:</strong> {p_name} | Age: {p_age} | ID: {p_id}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="info-panel"> <strong>Patient Found:</strong> {p_name} | Age: {p_age} | ID: {p_id}</div>', unsafe_allow_html=True)
 
         if not patient_found and not records.empty:
             match = records[records["patient_alias_id"].astype(str).str.contains(search_num.strip(), case=False, na=False)]
@@ -61,10 +67,13 @@ if st.session_state.ld_phase == "info":
                 p_name, p_age, p_id = r["patient_name"], int(r["age"]), r["record_id"]
                 p_history = str(r.get("primary_diagnosis", ""))
                 patient_found = True
-                st.markdown(f'<div class="info-panel">✅ <strong>Patient Found:</strong> {p_name} | Age: {p_age} | {r["primary_diagnosis"]}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="info-panel"> <strong>Patient Found:</strong> {p_name} | Age: {p_age} | {r["primary_diagnosis"]}</div>', unsafe_allow_html=True)
 
         if not patient_found:
-            st.warning("No patient found. Please register below.")
+            st.warning("No patient found. Both insurance number AND email must match.")
+
+    elif search_num.strip() or search_email.strip():
+        st.info("Please enter **both** insurance number and email for verification.")
 
     if not patient_found:
         st.markdown("**New Patient Registration:**")
@@ -74,7 +83,7 @@ if st.session_state.ld_phase == "info":
             from datetime import datetime as dt
             p_dob = st.date_input("Date of Birth *", value=dt(1990,1,1), min_value=dt(1920,1,1), key="ld_dob")
             p_phone = st.text_input("Phone Number *", key="ld_phone")
-            p_email = st.text_input("Email", key="ld_email")
+            p_email = st.text_input("Email", key="ld_reg_email")
             p_address = st.text_input("Address", key="ld_addr")
         with c2:
             p_ins_type = st.selectbox("Insurance Type", ["OHIP", "UHIP", "Other"], key="ld_ins")
@@ -109,7 +118,7 @@ if st.session_state.ld_phase == "ai_chat":
     sid = st.session_state.ld_session_id
     info = st.session_state.get("ld_patient_info", {})
 
-    st.markdown(f'<div class="info-panel">🤖 <strong>AI Medical Assistant</strong> — Collecting information for <strong>{info.get("name","")}</strong> (Age {info.get("age","")})</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="info-panel"> <strong>AI Medical Assistant</strong> — Collecting information for <strong>{info.get("name","")}</strong> (Age {info.get("age","")})</div>', unsafe_allow_html=True)
 
     AI_SYSTEM = f"""You are a professional medical intake assistant at Southlake Regional Health Centre.
 You are currently chatting with {info.get('name','a patient')}, Age: {info.get('age','unknown')}, History: {info.get('history','None')}.
@@ -134,7 +143,7 @@ RULES:
 """
 
     for msg in st.session_state.ld_ai_messages:
-        avatar = "🧑" if msg["role"] == "user" else "🤖"
+        avatar = "" if msg["role"] == "user" else ""
         with st.chat_message(msg["role"], avatar=avatar):
             st.markdown(msg["content"])
 
@@ -142,10 +151,10 @@ RULES:
         st.session_state.ld_ai_messages.append({"role": "user", "content": prompt})
         add_message(sid, "patient", prompt, info.get("name", ""))
 
-        with st.chat_message("user", avatar="🧑"):
+        with st.chat_message("user", avatar=""):
             st.markdown(prompt)
 
-        with st.chat_message("assistant", avatar="🤖"):
+        with st.chat_message("assistant", avatar=""):
             with st.spinner("AI is thinking..."):
                 reply = call_gpt_chat(AI_SYSTEM, st.session_state.ld_ai_messages)
                 if reply is None:
@@ -162,8 +171,8 @@ RULES:
 
     if ai_ready:
         st.markdown("---")
-        if st.button("📋 Generate Summary & Connect to Doctor", type="primary", use_container_width=True):
-            with st.spinner("🤖 AI generating clinical summary..."):
+        if st.button(" Generate Summary & Connect to Doctor", type="primary", use_container_width=True):
+            with st.spinner(" AI generating clinical summary..."):
                 transcript = "\n".join([f"{'Patient' if m['role']=='user' else 'AI'}: {m['content']}" for m in st.session_state.ld_ai_messages])
                 report_prompt = f"""Summarize this consultation into JSON.
 Patient: {info.get('name','')}, Age: {info.get('age','')}, History: {info.get('history','None')}
@@ -193,14 +202,27 @@ Output JSON only:
                     "department": report.get("suggested_department","General"), "red_flag": level=="Red",
                     "queue_status": "Waiting", "queued_at": now_str()})
 
-                circle = {"Green":"🟢","Yellow":"🟡","Red":"🔴"}.get(level,"🟡")
+                circle = {"Green":"","Yellow":"","Red":""}.get(level,"")
                 st.markdown(f'<div class="case-card case-card-{level.lower()}"><h3>{circle} AI Summary</h3><p><strong>Complaint:</strong> {report.get("chief_complaint","N/A")}</p><p><strong>Severity:</strong> {report.get("severity","N/A")} | Priority: {report.get("recommended_priority","N/A")}/100</p><p><strong>Dept:</strong> {report.get("suggested_department","N/A")}</p></div>', unsafe_allow_html=True)
-                st.success("✅ Summary sent to Doctor Dashboard. Waiting for doctor...")
+                st.success(" Summary sent to Doctor Dashboard. Waiting for doctor...")
             else:
                 update_status(sid, "waiting_doctor")
 
-            st.session_state.ld_phase = "doctor_chat"
+            st.session_state.ld_phase = "connect"
             st.rerun()
+
+# ═══════════════════════════════════════════
+#  PHASE 2.5: Connect to Live Doctor
+# ═══════════════════════════════════════════
+if st.session_state.ld_phase == "connect":
+    sid = st.session_state.ld_session_id
+    info = st.session_state.get("ld_patient_info", {})
+
+    st.markdown('<div class="info-panel" style="background:#FEF3C7;border-left-color:#F59E0B;"> <strong>AI Summary Complete</strong> — Your information has been prepared. Click below to connect with a live physician.</div>', unsafe_allow_html=True)
+
+    if st.button(" Contact Live Doctor", type="primary", use_container_width=True):
+        st.session_state.ld_phase = "doctor_chat"
+        st.rerun()
 
 # ═══════════════════════════════════════════
 #  PHASE 3: Live Doctor Chat
@@ -209,20 +231,20 @@ if st.session_state.ld_phase == "doctor_chat":
     sid = st.session_state.ld_session_id
     info = st.session_state.get("ld_patient_info", {})
 
-    st.markdown('<div class="info-panel" style="background:#E8F5E9;border-left-color:#4CAF50;">👨‍⚕️ <strong>Live Doctor Chat</strong> — You are in the queue. A physician will join shortly.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="info-panel" style="background:#E8F5E9;border-left-color:#4CAF50;"> <strong>Live Doctor Chat</strong> — You are in the queue. A physician will join shortly.</div>', unsafe_allow_html=True)
 
     data = load_chat_session(sid)
     if data:
         for msg in data["messages"]:
             if msg["role"] == "patient":
-                with st.chat_message("user", avatar="🧑"): st.markdown(msg["content"])
+                with st.chat_message("user", avatar=""): st.markdown(msg["content"])
             elif msg["role"] == "ai":
-                with st.chat_message("assistant", avatar="🤖"): st.markdown(f"*{msg['content']}*")
+                with st.chat_message("assistant", avatar=""): st.markdown(f"*{msg['content']}*")
             elif msg["role"] == "doctor":
-                with st.chat_message("assistant", avatar="👨‍⚕️"): st.markdown(f"**Dr.:** {msg['content']}")
+                with st.chat_message("assistant", avatar=""): st.markdown(f"**Dr.:** {msg['content']}")
 
         if data.get("status") == "closed":
-            st.success("✅ Consultation complete. Thank you!")
+            st.success(" Consultation complete. Thank you!")
             st.session_state.ld_phase = "done"
 
     if prompt := st.chat_input("Send message to doctor..."):
@@ -231,16 +253,16 @@ if st.session_state.ld_phase == "doctor_chat":
 
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🔄 Refresh Chat", use_container_width=True):
+        if st.button(" Refresh Chat", use_container_width=True):
             st.rerun()
     with c2:
-        if st.button("✅ End Consultation", use_container_width=True):
+        if st.button(" End Consultation", use_container_width=True):
             add_message(sid, "patient", "Thank you, doctor. I have no more questions.", info.get("name", "Patient"))
             update_status(sid, "closed")
             st.session_state.ld_phase = "done"
             st.rerun()
 
 if st.session_state.ld_phase == "done":
-    st.markdown('<div class="result-card" style="text-align:center;"><h3>✅ Consultation Complete</h3><p>Follow your doctor\'s recommendations.</p></div>', unsafe_allow_html=True)
-    if st.button("🔄 Start New Consultation"):
+    st.markdown('<div class="result-card" style="text-align:center;"><h3> Consultation Complete</h3><p>Follow your doctor\'s recommendations.</p></div>', unsafe_allow_html=True)
+    if st.button(" Start New Consultation"):
         st.session_state.ld_phase = "info"; st.session_state.ld_ai_messages = []; st.session_state.ld_session_id = None; st.rerun()

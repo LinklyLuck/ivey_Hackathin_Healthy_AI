@@ -8,10 +8,13 @@ inject_css()
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #1E3A5F 0%, #1E40AF 100%);">
-    <h1>📊 Registration Simulation</h1>
+    <h1> Registration Simulation</h1>
     <p>Synthetic intake schema validation — demographics, insurance, and patient profile analytics.</p>
 </div>
 """, unsafe_allow_html=True)
+
+if st.button(" Refresh Data", key="reg_refresh", use_container_width=False):
+    st.rerun()
 
 patients = load_patients()
 records = load_patient_records()
@@ -49,14 +52,17 @@ if not records.empty:
 
 # ─── Portal Registered Patients Table ───
 st.markdown("---")
-st.markdown("### 📁 Portal Registered Patients")
+c_t, c_r = st.columns([3,1])
+with c_t: st.markdown("###  Portal Registered Patients")
+with c_r:
+    if st.button(" Refresh", key="reg_refresh2", use_container_width=True): st.rerun()
 if not patients.empty:
     st.dataframe(patients, use_container_width=True, hide_index=True)
 else:
     st.info("No patients registered via portal yet.")
 
 # ─── Full DB Explorer ───
-with st.expander("🔎 Full Patient Records (3,000)"):
+with st.expander(" Full Patient Records (3,000)"):
     if not records.empty:
         c1, c2 = st.columns(2)
         with c1: hf = st.selectbox("Hospital", ["All"] + sorted(records["anchor_hospital"].unique().tolist()), key="adm_h")

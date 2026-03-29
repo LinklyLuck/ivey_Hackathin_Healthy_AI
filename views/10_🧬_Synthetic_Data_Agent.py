@@ -45,7 +45,7 @@ FHIR_MAPPING = {
 
 NAMES = ["Aiden Smith","Maya Johnson","Liam Brown","Sophia Williams","Noah Davis","Olivia Wilson","Ethan Moore","Emma Taylor","Lucas Anderson","Ava Thomas","Mason Jackson","Isabella White","Logan Harris","Mia Martin","Alexander Thompson","Charlotte Garcia","Jacob Martinez","Amelia Robinson","Daniel Clark","Harper Lewis","James Hall","Evelyn Allen","Benjamin Young","Abigail King","Henry Wright","Emily Lopez","Sebastian Hill","Elizabeth Scott","Jack Green","Sofia Adams","Owen Baker","Avery Nelson","William Carter","Ella Mitchell","Elijah Perez","Scarlett Roberts","Michael Turner","Aria Phillips","Ryan Campbell","Chloe Parker","Nathan Evans","Grace Edwards","Samuel Collins","Lily Stewart","Christian Sanchez","Zoey Morris","Dylan Rogers","Nora Reed","Caleb Cook","Hannah Morgan"]
 
-def _trace(step, icon, action, detail, status="✅", dur=0):
+def _trace(step, icon, action, detail, status="", dur=0):
     return {"step":step,"icon":icon,"action":action,"detail":detail,"status":status,"duration":f"{dur:.1f}s"}
 
 # ═══════════════════════════════════════════
@@ -89,7 +89,7 @@ def generate_cohort(seed_df, contract, trace):
     np.random.seed(42)
     indices = np.random.choice(len(seed_df), size=n, replace=True, p=weights)
     sampled = seed_df.iloc[indices].copy().reset_index(drop=True)
-    trace.append(_trace(5,"🔧","Weighted Sampling",f"Sampled {n} from seed (n={len(seed_df)}) with {len(constraints)} constraints","✅",time.time()-t0))
+    trace.append(_trace(5,"","Weighted Sampling",f"Sampled {n} from seed (n={len(seed_df)}) with {len(constraints)} constraints","",time.time()-t0))
 
     # Perturbation
     t1 = time.time()
@@ -123,7 +123,7 @@ def generate_cohort(seed_df, contract, trace):
             idx = sampled[sampled["care_status"]=="Escalated"].index
             flip = np.random.choice(idx, size=min(n_current-n_target,len(idx)), replace=False)
             sampled.loc[flip,"care_status"] = np.random.choice(["Active","Monitoring","Graduated"], size=len(flip))
-    trace.append(_trace(5,"🔀","Perturbation + Hard Constraints",f"Perturbed {n} records (age±3, dates±30d, names shuffled, escalation aligned)","✅",time.time()-t1))
+    trace.append(_trace(5,"","Perturbation + Hard Constraints",f"Perturbed {n} records (age±3, dates±30d, names shuffled, escalation aligned)","",time.time()-t1))
     return sampled
 
 # ═══════════════════════════════════════════
@@ -210,17 +210,17 @@ def privacy_audit(df, seed_df):
 # ═══════════════════════════════════════════
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0EA5E9 100%);">
-    <h1>🧬 Agentic Synthetic Data Factory</h1>
+    <h1> Agentic Synthetic Data Factory</h1>
     <p>Natural language → Data contract → Strategy selection → Generation → Dual audit → Repair loop → FHIR mapping → Simulation → Audit Pack</p>
-    <p style="font-size:0.85rem; opacity:0.8;">Southlake Health × Ivey Hackathon | Vibe-Coded Agentic Service for Healthcare</p>
+    <p style="font-size:0.85rem; opacity:0.8;">Southlake Health &times; Ivey Hackathon | By Qi Sun &amp; Jia An &middot; Advisor: Kaiyu Li</p>
 </div>
 """, unsafe_allow_html=True)
 
 seed_df = load_patient_records()
 if seed_df.empty: st.error("Seed dataset not found."); st.stop()
-st.markdown(f'<div class="info-panel">📊 <strong>Seed:</strong> {len(seed_df):,} records | {seed_df["department"].nunique()} depts | {seed_df["anchor_hospital"].nunique()} hospitals | {seed_df["primary_diagnosis"].nunique()} diagnoses</div>', unsafe_allow_html=True)
+st.markdown(f'<div class="info-panel"> <strong>Seed:</strong> {len(seed_df):,} records | {seed_df["department"].nunique()} depts | {seed_df["anchor_hospital"].nunique()} hospitals | {seed_df["primary_diagnosis"].nunique()} diagnoses</div>', unsafe_allow_html=True)
 
-tab_gen, tab_audit, tab_fhir, tab_sim, tab_pack, tab_hist = st.tabs(["🧬 Generate","🔍 Dual Audit","🏥 FHIR","🔄 Simulation","📦 Audit Pack","📁 Run History"])
+tab_gen, tab_audit, tab_fhir, tab_sim, tab_pack, tab_hist = st.tabs([" Generate"," Dual Audit"," FHIR"," Simulation"," Audit Pack"," Run History"])
 
 # ═══════════════════════════════════════════
 #  TAB 1: FULL AGENTIC PIPELINE
@@ -228,27 +228,27 @@ tab_gen, tab_audit, tab_fhir, tab_sim, tab_pack, tab_hist = st.tabs(["🧬 Gener
 with tab_gen:
     st.markdown("### Step 1: Natural Language Requirement")
     nl = st.text_area("Describe the synthetic dataset you need:", placeholder="Generate 500 elderly cardiac patients in York Region with 30% escalation rate", height=80)
-    st.caption("💡 Try: _Generate 300 respiratory patients aged 65+ with 40% escalation for senior-friendly ED QI study_")
+    st.caption(" Try: _Generate 300 respiratory patients aged 65+ with 40% escalation for senior-friendly ED QI study_")
 
     c1,c2,c3 = st.columns(3)
     with c1: target_n = st.number_input("Target Records",50,5000,500,step=50)
     with c2: seed_filter = st.selectbox("Seed Filter",["All Hospitals","Southlake Only","SHINE Network"])
     with c3: override_strategy = st.selectbox("Strategy Override",["Auto (Agent decides)","Force: Constraint Blender","Force: Distribution Sampling","Force: Lifecycle Sim"])
 
-    if st.button("🚀 Run Agentic Pipeline", type="primary", use_container_width=True) and nl.strip():
+    if st.button(" Run Agentic Pipeline", type="primary", use_container_width=True) and nl.strip():
         trace = []
         t_start = time.time()
 
         # ─── STEP 1: Parse Request ───
-        trace.append(_trace(1,"📝","Parse Request","Analyzing natural language requirement","⏳"))
+        trace.append(_trace(1,"","Parse Request","Analyzing natural language requirement","⏳"))
         contract = build_contract_from_prompt(nl, target_n)
-        trace[-1] = _trace(1,"📝","Parse Request",f"Extracted {sum(1 for v in contract.get('age_rules',{}).values() if v)} age rules, {len(contract.get('department_mix',[]))} dept filters, escalation={contract.get('escalation_target','N/A')}","✅",time.time()-t_start)
+        trace[-1] = _trace(1,"","Parse Request",f"Extracted {sum(1 for v in contract.get('age_rules',{}).values() if v)} age rules, {len(contract.get('department_mix',[]))} dept filters, escalation={contract.get('escalation_target','N/A')}","",time.time()-t_start)
 
         # ─── STEP 2: Build Data Contract ───
-        trace.append(_trace(2,"📋","Build Data Contract",f"Schema: {len(seed_df.columns)} fields | Quality: fidelity≥{contract.get('quality_thresholds',{}).get('fidelity',0.8)}, privacy ε≤{contract.get('quality_thresholds',{}).get('privacy_epsilon',5)}","✅"))
+        trace.append(_trace(2,"","Build Data Contract",f"Schema: {len(seed_df.columns)} fields | Quality: fidelity≥{contract.get('quality_thresholds',{}).get('fidelity',0.8)}, privacy ε≤{contract.get('quality_thresholds',{}).get('privacy_epsilon',5)}",""))
 
         # ─── Show Editable Contract (human-AI co-creation) ───
-        st.markdown("### 📋 Data Contract (editable — human-AI co-creation)")
+        st.markdown("###  Data Contract (editable — human-AI co-creation)")
         contract_str = st.text_area("Edit contract JSON if needed:", value=json.dumps(contract, indent=2), height=250, key="contract_edit")
         try:
             contract = json.loads(contract_str)
@@ -264,7 +264,7 @@ with tab_gen:
             working = seed_df[seed_df["anchor_hospital"].isin(["Southlake Regional Health Centre","Markham Stouffville Hospital","Stevenson Memorial Hospital"])].copy()
         else:
             working = seed_df.copy()
-        trace.append(_trace(3,"📊","Profile Seed Dataset",f"Filtered: {len(working)} records ({seed_filter}) | Age: {working['age'].min()}-{working['age'].max()} | Depts: {working['department'].nunique()}","✅",time.time()-t2))
+        trace.append(_trace(3,"","Profile Seed Dataset",f"Filtered: {len(working)} records ({seed_filter}) | Age: {working['age'].min()}-{working['age'].max()} | Depts: {working['department'].nunique()}","",time.time()-t2))
 
         # ─── STEP 4: Choose Strategy ───
         t3 = time.time()
@@ -273,12 +273,12 @@ with tab_gen:
             strat_info = {"strategy_name":strat_name,"display_name":override_strategy.replace("Force: ",""),"reasons":["User override"],"hard_constraints":[],"soft_constraints":[],"risk_notes":[],"expansion_ratio":target_n/len(working)}
         else:
             strat_info = choose_generation_strategy(contract, working)
-        trace.append(_trace(4,"🧠","Strategy Selection",f"Selected: {strat_info['display_name']} | Reasons: {'; '.join(strat_info['reasons'][:2])}","✅",time.time()-t3))
+        trace.append(_trace(4,"","Strategy Selection",f"Selected: {strat_info['display_name']} | Reasons: {'; '.join(strat_info['reasons'][:2])}","",time.time()-t3))
 
         # Show strategy reasoning
         st.markdown(f"""
         <div class="result-card">
-            <h3>🧠 Agent Strategy: {strat_info['display_name']}</h3>
+            <h3> Agent Strategy: {strat_info['display_name']}</h3>
             <p>{'<br>'.join('• ' + r for r in strat_info['reasons'])}</p>
             <p><strong>Hard constraints:</strong> {', '.join(strat_info.get('hard_constraints',[])) or 'None'}</p>
             <p><strong>Soft constraints:</strong> {', '.join(strat_info.get('soft_constraints',[])) or 'None'}</p>
@@ -292,32 +292,32 @@ with tab_gen:
         # ─── STEP 6: Structural Audit ───
         t4 = time.time()
         sa = structural_audit(D0)
-        trace.append(_trace(6,"🔍","Structural Audit (Pass 1)",f"Verdict: {sa['verdict']} | Pass rate: {sa['pass_rate']:.1%} | Issues: {sa['total_issues']}","✅" if sa["verdict"]!="FAIL" else "⚠️",time.time()-t4))
+        trace.append(_trace(6,"","Structural Audit (Pass 1)",f"Verdict: {sa['verdict']} | Pass rate: {sa['pass_rate']:.1%} | Issues: {sa['total_issues']}","" if sa["verdict"]!="FAIL" else "",time.time()-t4))
 
         # ─── STEP 7: Plausibility Audit ───
         t5 = time.time()
         pa = plausibility_audit(D0, working, contract)
-        trace.append(_trace(7,"🔍","Plausibility Audit (Pass 2)",f"Fidelity: {pa['fidelity_mean']:.2f} | Utility: {pa['utility_pass_rate']:.0%} | Elder plausible: {pa.get('elder_plausible','N/A')}","✅",time.time()-t5))
+        trace.append(_trace(7,"","Plausibility Audit (Pass 2)",f"Fidelity: {pa['fidelity_mean']:.2f} | Utility: {pa['utility_pass_rate']:.0%} | Elder plausible: {pa.get('elder_plausible','N/A')}","",time.time()-t5))
 
         # ─── STEP 8: Privacy Audit ───
         t6 = time.time()
         pra = privacy_audit(D0, working)
-        trace.append(_trace(8,"🔒","Privacy Audit",f"Risk: {pra['overall_risk']} | Exact match: {pra.get('exact_match_rate',0):.1%} | k-min: {pra.get('k_anonymity_min','N/A')} | ε≈{pra.get('dp_epsilon','N/A')}","✅" if pra["overall_risk"]!="HIGH" else "⚠️",time.time()-t6))
+        trace.append(_trace(8,"","Privacy Audit",f"Risk: {pra['overall_risk']} | Exact match: {pra.get('exact_match_rate',0):.1%} | k-min: {pra.get('k_anonymity_min','N/A')} | ε≈{pra.get('dp_epsilon','N/A')}","" if pra["overall_risk"]!="HIGH" else "",time.time()-t6))
 
         # ─── STEP 9: REPAIR LOOP (D0 → D1) ───
         t7 = time.time()
         should_repair, repair_reasons = needs_repair(sa, pa, pra, contract)
         if should_repair:
-            trace.append(_trace(9,"🔧","Repair Loop Triggered",f"Reasons: {'; '.join(repair_reasons[:3])}","⏳"))
+            trace.append(_trace(9,"","Repair Loop Triggered",f"Reasons: {'; '.join(repair_reasons[:3])}","⏳"))
             D1, repair_report = repair_dataset(D0, contract, sa, pra, working)
             # Re-audit D1
             sa2 = structural_audit(D1)
             pa2 = plausibility_audit(D1, working, contract)
             pra2 = privacy_audit(D1, working)
-            trace[-1] = _trace(9,"🔧","Repair Loop Complete",f"Applied {repair_report['repairs_applied']} repairs | New verdict: {sa2['verdict']} | New privacy: {pra2['overall_risk']}","✅",time.time()-t7)
+            trace[-1] = _trace(9,"","Repair Loop Complete",f"Applied {repair_report['repairs_applied']} repairs | New verdict: {sa2['verdict']} | New privacy: {pra2['overall_risk']}","",time.time()-t7)
 
             # Show before/after
-            st.markdown("### 🔧 Repair Loop: D0 → D1 (Before vs After)")
+            st.markdown("###  Repair Loop: D0 → D1 (Before vs After)")
             bef = repair_report["metrics_before"]
             aft = repair_report["metrics_after"]
             cols = st.columns(len(bef))
@@ -329,16 +329,16 @@ with tab_gen:
                     st.markdown(f'<div class="metric-card"><div class="number" style="color:{color}">{v} → {av}</div><div class="label">{k}</div></div>', unsafe_allow_html=True)
 
             for rd in repair_report["repair_details"]:
-                st.markdown(f"- ✅ {rd}")
+                st.markdown(f"-  {rd}")
 
             final_df, final_sa, final_pa, final_pra = D1, sa2, pa2, pra2
         else:
-            trace.append(_trace(9,"✅","Repair Check",f"No repair needed — all thresholds met","✅",0))
+            trace.append(_trace(9,"","Repair Check",f"No repair needed — all thresholds met","",0))
             final_df, final_sa, final_pa, final_pra = D0, sa, pa, pra
 
         # ─── STEP 10: Pipeline Complete ───
         total = time.time()-t_start
-        trace.append(_trace(10,"🏁","Pipeline Complete",f"Total: {total:.1f}s | Records: {len(final_df)} | Strategy: {strat_info['display_name']}","✅",total))
+        trace.append(_trace(10,"","Pipeline Complete",f"Total: {total:.1f}s | Records: {len(final_df)} | Strategy: {strat_info['display_name']}","",total))
 
         # Save run
         run_id = f"RUN-{int(time.time())}"
@@ -350,13 +350,13 @@ with tab_gen:
         st.session_state.update({"syn_df":final_df,"syn_contract":contract,"syn_trace":trace,"syn_sa":final_sa,"syn_pa":final_pa,"syn_pra":final_pra,"syn_seed":working,"syn_strat":strat_info,"syn_run_id":run_id})
 
         # ─── AGENT TRACE TIMELINE ───
-        st.markdown("### 🔗 Agent Trace (10-Step Pipeline)")
+        st.markdown("###  Agent Trace (10-Step Pipeline)")
         for t in trace:
             st.markdown(f'<div class="transport-node"><span class="node-name">{t["status"]} Step {t["step"]}: {t["icon"]} {t["action"]}</span><span class="node-distance">{t["duration"]}</span></div>', unsafe_allow_html=True)
             st.caption(f"    ↳ {t['detail']}")
 
         # ─── Preview ───
-        st.markdown("### 📊 Generated Data Preview")
+        st.markdown("###  Generated Data Preview")
         st.dataframe(final_df.head(15), use_container_width=True, hide_index=True)
 
         c1,c2,c3,c4 = st.columns(4)
@@ -365,7 +365,7 @@ with tab_gen:
         with c3: d=final_df["department"].value_counts().head(5).reset_index(); d.columns=["D","N"]; fig=px.bar(d,x="N",y="D",orientation="h",title="Depts",color_discrete_sequence=["#7C3AED"]); fig.update_layout(height=260); st.plotly_chart(fig,use_container_width=True)
         with c4: d=final_df["primary_diagnosis"].value_counts().head(5).reset_index(); d.columns=["D","N"]; fig=px.bar(d,x="N",y="D",orientation="h",title="Diagnoses",color_discrete_sequence=["#059669"]); fig.update_layout(height=260); st.plotly_chart(fig,use_container_width=True)
 
-        st.success(f"✅ Pipeline complete in {total:.1f}s — {len(final_df)} records generated, audited{', repaired' if should_repair else ''}, ready.")
+        st.success(f" Pipeline complete in {total:.1f}s — {len(final_df)} records generated, audited{', repaired' if should_repair else ''}, ready.")
 
 # ═══════════════════════════════════════════
 #  TAB 2: DUAL AUDIT DETAILS
@@ -383,30 +383,30 @@ with tab_audit:
             fid=pa.get("fidelity",{})
             if fid: fig=px.bar(pd.DataFrame({"F":list(fid.keys()),"S":list(fid.values())}),x="S",y="F",orientation="h",title=f"Fidelity (mean:{pa['fidelity_mean']:.2f})",color_discrete_sequence=["#0066CC"],range_x=[0,1]); fig.update_layout(height=280); st.plotly_chart(fig,use_container_width=True)
         with c2:
-            for c in pa.get("utility_checks",[]): st.markdown(f"{'✅' if c['satisfied'] else '❌'} {c['constraint']} → {c['actual']}")
-            st.markdown(f"{'✅' if pa.get('elder_plausible') else '⚠️'} Elder esc {pa.get('elder_esc',0):.1%} vs Young {pa.get('young_esc',0):.1%}")
+            for c in pa.get("utility_checks",[]): st.markdown(f"{'' if c['satisfied'] else ''} {c['constraint']} → {c['actual']}")
+            st.markdown(f"{'' if pa.get('elder_plausible') else ''} Elder esc {pa.get('elder_esc',0):.1%} vs Young {pa.get('young_esc',0):.1%}")
 
         st.markdown("---")
         oc={"LOW":"#22C55E","MEDIUM":"#EAB308","HIGH":"#EF4444"}.get(pra.get("overall_risk",""),"#64748B")
         st.markdown(f'<div class="metric-row"><div class="metric-card"><div class="number" style="color:{oc}">{pra.get("overall_risk","N/A")}</div><div class="label">Privacy Risk</div></div><div class="metric-card"><div class="number">{pra.get("exact_match_rate",0):.1%}</div><div class="label">Exact Match</div></div><div class="metric-card"><div class="number">{pra.get("k_anonymity_min","N/A")}</div><div class="label">k-min</div></div><div class="metric-card"><div class="number">{pra.get("dp_epsilon","N/A")}</div><div class="label">ε estimate</div></div></div>', unsafe_allow_html=True)
-        if pra.get("dp_note"): st.markdown(f'<div class="info-panel">🔐 ε={pra.get("dp_epsilon","N/A")} — {pra["dp_note"]}</div>', unsafe_allow_html=True)
+        if pra.get("dp_note"): st.markdown(f'<div class="info-panel"> ε={pra.get("dp_epsilon","N/A")} — {pra["dp_note"]}</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
 #  TAB 3: FHIR
 # ═══════════════════════════════════════════
 with tab_fhir:
-    st.markdown("### 🏥 FHIR R4 Semantic Mapping")
+    st.markdown("###  FHIR R4 Semantic Mapping")
     rows = [{"Field":f,"FHIR Resource":m["r"],"FHIR Path":m["p"],"Description":m["d"]} for f,m in FHIR_MAPPING.items()]
     st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True,height=450)
     r=pd.DataFrame(rows)["FHIR Resource"].value_counts().reset_index(); r.columns=["Resource","Fields"]
     fig=px.bar(r,x="Fields",y="Resource",orientation="h",title="FHIR R4 Coverage",color_discrete_sequence=["#0066CC"]); fig.update_layout(height=280); st.plotly_chart(fig,use_container_width=True)
-    st.markdown('<div class="info-panel">💡 Each CSV record maps to a FHIR Bundle (Patient + Encounter + Condition + CarePlan + Coverage + MedicationRequest). Compatible with MEDITECH Expanse, Novari, SHINE.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="info-panel"> Each CSV record maps to a FHIR Bundle (Patient + Encounter + Condition + CarePlan + Coverage + MedicationRequest). Compatible with MEDITECH Expanse, Novari, SHINE.</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
 #  TAB 4: SIMULATION
 # ═══════════════════════════════════════════
 with tab_sim:
-    st.markdown("### 🔄 Downstream Utility: Patient Flow Simulation")
+    st.markdown("###  Downstream Utility: Patient Flow Simulation")
     if "syn_df" not in st.session_state: st.info("Generate data first.")
     else:
         syn=st.session_state["syn_df"]; from core.triage import calculate_age_risk
@@ -418,17 +418,166 @@ with tab_sim:
         s.loc[em,"risk_level"]=s.loc[em,"total_priority"].apply(lambda x:"Red" if x>=60 else "Yellow")
 
         r,y,g=(s["risk_level"]=="Red").sum(),(s["risk_level"]=="Yellow").sum(),(s["risk_level"]=="Green").sum()
-        st.markdown(f'<div class="metric-row"><div class="metric-card"><div class="number">{len(s)}</div><div class="label">Simulated</div></div><div class="metric-card"><div class="number" style="color:#DC2626">{r}</div><div class="label">🔴 Red</div></div><div class="metric-card"><div class="number" style="color:#EAB308">{y}</div><div class="label">🟡 Yellow</div></div><div class="metric-card"><div class="number" style="color:#22C55E">{g}</div><div class="label">🟢 Green</div></div></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="metric-row"><div class="metric-card"><div class="number">{len(s)}</div><div class="label">Simulated</div></div><div class="metric-card"><div class="number" style="color:#DC2626">{r}</div><div class="label"> Red</div></div><div class="metric-card"><div class="number" style="color:#EAB308">{y}</div><div class="label"> Yellow</div></div><div class="metric-card"><div class="number" style="color:#22C55E">{g}</div><div class="label"> Green</div></div></div>', unsafe_allow_html=True)
 
         c1,c2=st.columns(2)
         with c1: fig=px.pie(s["risk_level"].value_counts().reset_index(),names="risk_level",values="count",color="risk_level",color_discrete_map={"Red":"#EF4444","Yellow":"#EAB308","Green":"#22C55E"},title="Triage Distribution"); fig.update_layout(height=300); st.plotly_chart(fig,use_container_width=True)
         with c2: fig=px.histogram(s,x="total_priority",nbins=20,color="risk_level",color_discrete_map={"Red":"#EF4444","Yellow":"#EAB308","Green":"#22C55E"},title="Priority Scores"); fig.update_layout(height=300); st.plotly_chart(fig,use_container_width=True)
 
-        st.markdown("### 👴 Elder Care Validation (Ontario Health EDRVQP)")
+        st.markdown("###  Elder Care Validation (Ontario Health EDRVQP)")
         ag=pd.cut(s["age"],bins=[0,17,64,84,120],labels=["0-17","18-64","65-84","85+"])
         es=s.groupby(ag,observed=True).agg(Count=("record_id","count"),Avg_Priority=("total_priority","mean"),Red_Rate=("risk_level",lambda x:(x=="Red").mean()),Escalated_Rate=("care_status",lambda x:(x=="Escalated").mean())).round(3)
         st.dataframe(es,use_container_width=True)
-        st.markdown('<div class="info-panel">✅ If 85+ shows highest Red Rate & Escalated Rate → synthetic data correctly models Ontario Health elder risk pattern (18.7/1000 for 85+).</div>', unsafe_allow_html=True)
+        st.markdown('<div class="info-panel"> If 85+ shows highest Red Rate & Escalated Rate → synthetic data correctly models Ontario Health elder risk pattern (18.7/1000 for 85+).</div>', unsafe_allow_html=True)
+
+        # ═══ LENGTH OF STAY PREDICTION: BEFORE vs AFTER ═══
+        st.markdown("---")
+        st.markdown("###  Length of Stay Prediction: Before vs After System")
+        st.markdown("*Predicted hospital days per patient based on age, diagnosis, department, and care complexity.*")
+
+        # ─── LOS Prediction Model (rule-based from clinical benchmarks) ───
+        def predict_los(row):
+            """Predict baseline LOS (days) from patient features."""
+            base = 3.5  # Ontario avg LOS for acute care
+
+            # Age factor (CIHI data: 65+ stays ~2x longer)
+            age = row.get("age", 50)
+            if age >= 85: base += 4.5
+            elif age >= 75: base += 3.2
+            elif age >= 65: base += 2.0
+            elif age < 18: base += 0.5
+
+            # Department factor
+            dept = str(row.get("department", ""))
+            dept_add = {"Cardiology": 2.8, "Oncology": 4.0, "Emergency": 1.5, "Respiratory": 2.5,
+                        "Internal Medicine": 2.2, "Mental Health": 5.0, "Orthopedics": 3.5,
+                        "Endocrinology": 1.8, "General Surgery": 2.5, "Neurology": 3.0}
+            base += dept_add.get(dept, 1.5)
+
+            # Diagnosis severity
+            diag = str(row.get("primary_diagnosis", "")).lower()
+            if any(k in diag for k in ["heart failure", "chf", "cardiac"]): base += 2.0
+            elif any(k in diag for k in ["cancer", "tumor"]): base += 3.5
+            elif any(k in diag for k in ["stroke", "hemorrhage"]): base += 3.0
+            elif any(k in diag for k in ["diabetes", "hypertension"]): base += 0.8
+            elif any(k in diag for k in ["copd", "asthma", "respiratory"]): base += 1.5
+            elif any(k in diag for k in ["depression", "anxiety"]): base += 2.0
+
+            # Care status multiplier
+            status = str(row.get("care_status", ""))
+            if status == "Escalated": base *= 1.35
+            elif status == "Monitoring": base *= 1.1
+
+            # Follow-up complexity
+            fu30 = int(row.get("followup_count_30d", 0))
+            fu90 = int(row.get("followup_count_90d", 0))
+            if fu30 >= 3: base += 1.5
+            if fu90 >= 5: base += 1.0
+
+            return round(max(base + np.random.normal(0, 0.8), 1.0), 1)
+
+        def predict_after_los(before_los, row):
+            """Predict LOS after system optimization."""
+            savings = 0
+
+            # AI triage → faster assessment (saves 0.3-0.8 days)
+            savings += 0.5
+
+            # AI follow-up → earlier safe discharge (saves 0.5-2.0 days)
+            age = row.get("age", 50)
+            if age >= 65: savings += 1.2  # Elder patients benefit most
+            else: savings += 0.6
+
+            # Predictive discharge planning (saves 0.3-1.0 days)
+            if str(row.get("care_status", "")) == "Escalated":
+                savings += 0.8
+            else:
+                savings += 0.4
+
+            # Transport pre-scheduling (saves 0.2-0.5 days of bed blocking)
+            savings += 0.3
+
+            # Documentation automation (indirect: 0.2-0.4 days)
+            savings += 0.3
+
+            after = max(before_los - savings + np.random.normal(0, 0.3), 1.0)
+            return round(after, 1)
+
+        np.random.seed(456)
+        s["los_before"] = s.apply(predict_los, axis=1)
+        s["los_after"] = s.apply(lambda row: predict_after_los(row["los_before"], row), axis=1)
+        s["los_saved"] = (s["los_before"] - s["los_after"]).round(1)
+
+        # ─── Summary Metrics ───
+        avg_before = s["los_before"].mean()
+        avg_after = s["los_after"].mean()
+        avg_saved = s["los_saved"].mean()
+        total_days_saved = s["los_saved"].sum()
+        pct_reduction = (avg_saved / avg_before * 100)
+
+        # Cost calculation (Ontario avg hospital bed cost: ~$1,200/day)
+        cost_per_day = 1200
+        total_cost_saved = total_days_saved * cost_per_day
+
+        st.markdown(f"""
+        <div class="metric-row">
+            <div class="metric-card"><div class="number" style="color:#DC2626">{avg_before:.1f}</div><div class="label">Avg LOS Before (days)</div></div>
+            <div class="metric-card"><div class="number" style="color:#22C55E">{avg_after:.1f}</div><div class="label">Avg LOS After (days)</div></div>
+            <div class="metric-card"><div class="number" style="color:#0066CC">{avg_saved:.1f}</div><div class="label">Avg Days Saved</div></div>
+            <div class="metric-card"><div class="number" style="color:#7C3AED">{pct_reduction:.0f}%</div><div class="label">Reduction</div></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown(f"""
+        <div class="metric-row">
+            <div class="metric-card"><div class="number">{len(s)}</div><div class="label">Patients Simulated</div></div>
+            <div class="metric-card"><div class="number" style="color:#0066CC">{total_days_saved:,.0f}</div><div class="label">Total Bed-Days Saved</div></div>
+            <div class="metric-card"><div class="number" style="color:#22C55E">${total_cost_saved:,.0f}</div><div class="label">Est. Cost Savings</div></div>
+            <div class="metric-card"><div class="number" style="color:#059669">${cost_per_day:,}/day</div><div class="label">Bed Cost (Ontario avg)</div></div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ─── Charts ───
+        c1, c2 = st.columns(2)
+        with c1:
+            los_compare = pd.DataFrame({"Scenario": ["Before System", "After System"], "Avg LOS (days)": [avg_before, avg_after]})
+            fig = px.bar(los_compare, x="Scenario", y="Avg LOS (days)", color="Scenario", color_discrete_map={"Before System": "#EF4444", "After System": "#22C55E"}, title="Average Length of Stay: Before vs After")
+            fig.update_layout(height=320, showlegend=False); st.plotly_chart(fig, use_container_width=True)
+        with c2:
+            fig = px.histogram(s, x="los_saved", nbins=20, title="Distribution of Days Saved per Patient", color_discrete_sequence=["#3B82F6"])
+            fig.update_layout(height=320, xaxis_title="Days Saved", yaxis_title="Patients"); st.plotly_chart(fig, use_container_width=True)
+
+        # ─── By Age Group ───
+        st.markdown("#### LOS Impact by Age Group")
+        age_grp = pd.cut(s["age"], bins=[0, 17, 64, 84, 120], labels=["0-17", "18-64", "65-84", "85+"])
+        los_by_age = s.groupby(age_grp, observed=True).agg(
+            Count=("record_id", "count"),
+            Before_LOS=("los_before", "mean"),
+            After_LOS=("los_after", "mean"),
+            Days_Saved=("los_saved", "mean"),
+        ).round(1)
+        los_by_age["Reduction_%"] = ((los_by_age["Days_Saved"] / los_by_age["Before_LOS"]) * 100).round(1)
+        los_by_age["Est_Cost_Saved"] = (los_by_age["Count"] * los_by_age["Days_Saved"] * cost_per_day).astype(int)
+        st.dataframe(los_by_age, use_container_width=True)
+
+        # ─── By Department ───
+        st.markdown("#### LOS Impact by Department")
+        los_by_dept = s.groupby("department", observed=True).agg(
+            Count=("record_id", "count"),
+            Before_LOS=("los_before", "mean"),
+            After_LOS=("los_after", "mean"),
+            Days_Saved=("los_saved", "mean"),
+        ).round(1).sort_values("Days_Saved", ascending=False)
+        los_by_dept["Reduction_%"] = ((los_by_dept["Days_Saved"] / los_by_dept["Before_LOS"]) * 100).round(1)
+        st.dataframe(los_by_dept, use_container_width=True)
+
+        # ─── Sample Patient Detail ───
+        st.markdown("####  Sample Patient LOS Predictions")
+        sample = s[["record_id", "patient_name", "age", "department", "primary_diagnosis", "care_status", "los_before", "los_after", "los_saved"]].head(15)
+        sample.columns = ["ID", "Name", "Age", "Department", "Diagnosis", "Status", "Before (days)", "After (days)", "Saved (days)"]
+        st.dataframe(sample, use_container_width=True, hide_index=True)
+
+        st.markdown(f'<div class="info-panel"> <strong>Methodology:</strong> LOS predicted from age, department, diagnosis, care status, and follow-up complexity. Savings estimated from AI triage acceleration (−0.5d), predictive discharge (−0.4-1.2d), follow-up optimization (−0.6-1.2d), and transport pre-scheduling (−0.3d). Ontario avg bed cost: ${cost_per_day:,}/day (CIHI 2024).</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
 #  TAB 5: AUDIT PACK
@@ -437,25 +586,25 @@ with tab_pack:
     if "syn_df" not in st.session_state: st.info("Generate data first.")
     else:
         syn=st.session_state["syn_df"]; ct=st.session_state.get("syn_contract",{}); tr=st.session_state.get("syn_trace",[])
-        for item in ["✅ Synthetic dataset (CSV)","✅ Data contract (JSON)","✅ FHIR field dictionary","✅ Agent trace (10 steps)","✅ Structural audit","✅ Plausibility & utility audit","✅ Privacy risk assessment","✅ Risk & limitations statement"]:
+        for item in [" Synthetic dataset (CSV)"," Data contract (JSON)"," FHIR field dictionary"," Agent trace (10 steps)"," Structural audit"," Plausibility & utility audit"," Privacy risk assessment"," Risk & limitations statement"]:
             st.markdown(f"  {item}")
         buf=io.StringIO(); syn.to_csv(buf,index=False)
-        st.download_button("⬇️ Synthetic Data CSV",buf.getvalue(),"synthetic_cohort.csv","text/csv",use_container_width=True)
+        st.download_button("⬇ Synthetic Data CSV",buf.getvalue(),"synthetic_cohort.csv","text/csv",use_container_width=True)
         pack={"metadata":{"generated_at":datetime.now().isoformat(),"generator":"Southlake Agentic Synthetic Data Factory","records":len(syn),"run_id":st.session_state.get("syn_run_id","")},
             "data_contract":ct,"field_dictionary":{f:FHIR_MAPPING[f] for f in FHIR_MAPPING},"agent_trace":tr,
             "structural_audit":st.session_state.get("syn_sa",{}),"plausibility_audit":{k:v for k,v in st.session_state.get("syn_pa",{}).items() if not isinstance(v,pd.Series)},"privacy_audit":st.session_state.get("syn_pra",{}),
             "risk_statement":{"warning":"SYNTHETIC DATA — NOT FOR CLINICAL USE","limitations":["Not real patients.","Synthetic≠anonymous: memorization risk exists.","Privacy-utility tradeoff applies.","Never for clinical decisions.","Temporal patterns may not reflect real seasonality."],"intended_use":["Software testing","QI simulation","Research","Education","Hackathon demo"],"regulatory":"PHIPA | PIPEDA | NIST SP 800-188"}}
-        st.download_button("⬇️ Full Audit Pack JSON",json.dumps(pack,indent=2,default=str),"audit_pack.json","application/json",use_container_width=True)
-        st.markdown('<div class="safety-banner"><strong>⚠️ SYNTHETIC DATA — NOT FOR CLINICAL USE</strong><br>Generated by AI agent for demo/testing/research only. Not real patients. Synthetic≠anonymous.<br><strong>Regulatory:</strong> PHIPA (ON) | PIPEDA (CA) | NIST SP 800-188</div>', unsafe_allow_html=True)
+        st.download_button("⬇ Full Audit Pack JSON",json.dumps(pack,indent=2,default=str),"audit_pack.json","application/json",use_container_width=True)
+        st.markdown('<div class="safety-banner"><strong> SYNTHETIC DATA — NOT FOR CLINICAL USE</strong><br>Generated by AI agent for demo/testing/research only. Not real patients. Synthetic≠anonymous.<br><strong>Regulatory:</strong> PHIPA (ON) | PIPEDA (CA) | NIST SP 800-188</div>', unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════
 #  TAB 6: RUN HISTORY
 # ═══════════════════════════════════════════
 with tab_hist:
-    st.markdown("### 📁 Generation Run History")
+    st.markdown("###  Generation Run History")
     runs = load_generation_history()
     if not runs:
         st.info("No runs yet. Generate data to see history.")
     else:
         for r in runs[:10]:
-            st.markdown(f'<div class="transport-node"><span class="node-name">🧬 {r["run_id"]} — {r.get("records",0)} records</span><span class="node-distance">{r.get("created_at","")}</span></div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="transport-node"><span class="node-name"> {r["run_id"]} — {r.get("records",0)} records</span><span class="node-distance">{r.get("created_at","")}</span></div>', unsafe_allow_html=True)

@@ -12,7 +12,7 @@ inject_css()
 
 st.markdown("""
 <div class="hero-card" style="background: linear-gradient(135deg, #065F46 0%, #059669 50%, #10B981 100%);">
-    <h1>🔄 Smart Follow-Up</h1>
+    <h1> Smart Follow-Up</h1>
     <p>Enter your case number to complete your post-discharge follow-up questionnaire.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -40,7 +40,7 @@ if dis_row is None:
     st.error(f"Case **{case_id}** not found. Please check your case number and try again.")
     st.markdown("""
     <div class="info-panel">
-        💡 <strong>Available demo cases:</strong> CASE001, CASE002, CASE004, CASE006, CASE008, CASE011
+         <strong>Available demo cases:</strong> CASE001, CASE002, CASE004, CASE006, CASE008, CASE011
     </div>
     """, unsafe_allow_html=True)
     st.stop()
@@ -48,7 +48,7 @@ if dis_row is None:
 # ─── Show Case Info ───
 st.markdown(f"""
 <div class="case-card">
-    <h3>📄 Your Case: {case_id}</h3>
+    <h3> Your Case: {case_id}</h3>
     <p><strong>Diagnosis:</strong> {dis_row['diagnosis_summary']}</p>
     <p><strong>Medications:</strong> {dis_row['medications']}</p>
     <p><strong>Attending:</strong> {dis_row['attending_service']}</p>
@@ -57,32 +57,52 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # ─── Step 2: Questionnaire (directly shown) ───
-st.markdown("---")
-st.markdown("### 📝 Follow-Up Questionnaire")
-st.markdown("*Please answer the following questions about your current condition:*")
-
-# ─── Load admin-sent AI questions if available ───
+# ─── Check if this case already has a completed follow-up ───
 import os, json as _json
 from utils.storage import DATA_DIR
+
+fu_results = load_followup_results()
+already_completed = False
+if not fu_results.empty and "case_id" in fu_results.columns:
+    completed = fu_results[fu_results["case_id"] == case_id]
+    if not completed.empty:
+        already_completed = True
+        latest = completed.iloc[-1]
+        risk_icon = {"Green":"","Yellow":"","Red":""}.get(str(latest.get("risk_level","")),"")
+        st.markdown(f"""
+        <div class="case-card case-card-{str(latest.get('risk_level','')).lower()}">
+            <h3> Follow-Up Already Completed</h3>
+            <p><strong>Submitted:</strong> {latest.get('followup_date','')} | <strong>Risk:</strong> {risk_icon} {latest.get('risk_level','')} | <strong>Score:</strong> {latest.get('risk_score','')}</p>
+            <p><strong>Action:</strong> {latest.get('recommended_action','')}</p>
+            <p><strong>Status:</strong> {latest.get('clinician_review_status','Pending')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+        st.info("This case has already been submitted. Enter a different case number or contact your care team for a new follow-up.")
+        st.stop()
+
+st.markdown("---")
+st.markdown("###  Follow-Up Questionnaire")
+st.markdown("*Please answer the following questions about your current condition:*")
+
+# ─── Load admin-sent AI questions (only for THIS case, not completed) ───
 q_path = os.path.join(DATA_DIR, "followup_questions.json")
 admin_questions = []
 if os.path.exists(q_path):
     with open(q_path, "r") as f:
         try:
             all_qs = _json.load(f)
-            # Try exact match first, then partial match on case_id
+            # Try exact match first
+            matched_key = None
             if case_id in all_qs:
-                admin_questions = all_qs[case_id].get("questions", [])
+                matched_key = case_id
             else:
-                # Search all keys for partial match
-                for key, val in all_qs.items():
+                # Try partial match (CASE001 in PRCL-xxxx or vice versa)
+                for key in all_qs:
                     if case_id.lower() in key.lower() or key.lower() in case_id.lower():
-                        admin_questions = val.get("questions", [])
+                        matched_key = key
                         break
-                # If still nothing, check the most recent entry
-                if not admin_questions and all_qs:
-                    last_key = list(all_qs.keys())[-1]
-                    admin_questions = all_qs[last_key].get("questions", [])
+            if matched_key and all_qs[matched_key].get("status") != "completed":
+                admin_questions = all_qs[matched_key].get("questions", [])
         except: pass
 
 # ─── Default clinical checklist (always shown) ───
@@ -104,7 +124,7 @@ with c2:
 admin_answers = {}
 if admin_questions:
     st.markdown("---")
-    st.markdown("### 🤖 Additional Questions from Your Care Team")
+    st.markdown("###  Additional Questions from Your Care Team")
     st.markdown(f'<div class="info-panel" style="background:#EBF5FF;border-left-color:#3B82F6;">Your care team has sent <strong>{len(admin_questions)}</strong> personalized questions based on your discharge record. Please answer them below.</div>', unsafe_allow_html=True)
     for i, q in enumerate(admin_questions):
         txt = q.get("text", str(q)) if isinstance(q, dict) else str(q)
@@ -113,7 +133,7 @@ if admin_questions:
             continue
         st.markdown(f"""<div style="padding:0.5rem 1rem;margin:0.3rem 0;background:#F8FAFC;border-left:3px solid #3B82F6;border-radius:6px;">
             <strong style="color:#2563EB;">Q{i+1}.</strong> {txt}</div>""", unsafe_allow_html=True)
-        admin_answers[f"admin_q{i+1}"] = st.text_area("Your answer:", height=60, key=f"aq_{i}", label_visibility="collapsed")
+        admin_answers[f"admin_q{i+1}"] = st.text_area("Your answer:", height=68, key=f"aq_{i}", label_visibility="collapsed")
 else:
     st.markdown("")
     st.markdown('<div class="info-panel" style="opacity:0.6;">No additional questions from your care team yet. Click <strong>Refresh</strong> to check for updates.</div>', unsafe_allow_html=True)
@@ -124,9 +144,9 @@ notes = st.text_area("Any additional comments or concerns:", height=80, key="fno
 # ─── Step 3: Submit & Results ───
 c_sub, c_ref = st.columns([1, 1])
 with c_sub:
-    submit_fu = st.button("⚡ Submit Follow-Up", type="primary", use_container_width=True)
+    submit_fu = st.button(" Submit Follow-Up", type="primary", use_container_width=True)
 with c_ref:
-    if st.button("🔄 Refresh", use_container_width=True):
+    if st.button(" Refresh", use_container_width=True):
         st.rerun()
 
 if submit_fu:
@@ -140,13 +160,13 @@ if submit_fu:
     result = classify_followup(answers)
     level = result["level"]
     transport = recommend_transport(level, has_family, sob and o2)
-    circle = {"Green": "🟢", "Yellow": "🟡", "Red": "🔴"}.get(level, "⚪")
+    circle = {"Green": "", "Yellow": "", "Red": ""}.get(level, "")
 
-    with st.spinner("🤖 AI analyzing your responses..."):
+    with st.spinner(" AI analyzing your responses..."):
         ai_analysis = ai_analyze_followup_risk(dis_row["diagnosis_summary"], dis_row["discharge_instructions"], {**answers, "notes": notes})
 
     st.markdown("---")
-    st.markdown("### 📊 Your Follow-Up Results")
+    st.markdown("###  Your Follow-Up Results")
     st.markdown(risk_banner(level, f"{circle} {risk_circle(level)} — {result['urgency']}"), unsafe_allow_html=True)
 
     c1, c2 = st.columns([1, 2])
@@ -156,14 +176,14 @@ if submit_fu:
         st.markdown(f'<div class="result-card"><h3>What Happens Next</h3><p>{result["action"]}</p></div>', unsafe_allow_html=True)
         if result["concerns"]:
             for c in result["concerns"]:
-                st.markdown(f"- ⚠️ {c}")
+                st.markdown(f"-  {c}")
 
     if ai_analysis:
-        st.markdown(f'<div class="case-card case-card-{level.lower()}"><h3>🤖 AI Analysis</h3><p>{ai_analysis.get("risk_assessment","N/A")}</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="case-card case-card-{level.lower()}"><h3> AI Analysis</h3><p>{ai_analysis.get("risk_assessment","N/A")}</p></div>', unsafe_allow_html=True)
 
     # Transport
     if transport["transport_level"] != "None":
-        st.markdown("### 🚗 Transport Recommendation")
+        st.markdown("###  Transport Recommendation")
         st.markdown(f'<div class="result-card"><h3>{transport["icon"]} {transport["transport_level"]}</h3><p>{transport["recommendation"]}</p></div>', unsafe_allow_html=True)
 
         if transport["nodes"]:
@@ -172,7 +192,7 @@ if submit_fu:
             for n in nodes: ll += [hosp["lat"], n["lat"], None]; ln += [hosp["lng"], n["lng"], None]
             fig = go.Figure()
             fig.add_trace(go.Scattermapbox(lat=ll, lon=ln, mode="lines", line=dict(width=2, color="#F97316"), hoverinfo="skip", showlegend=False))
-            fig.add_trace(go.Scattermapbox(lat=[hosp["lat"]]+[n["lat"] for n in nodes], lon=[hosp["lng"]]+[n["lng"] for n in nodes], mode="markers+text", marker=dict(size=[22]+[14]*len(nodes), color=["#DC2626"]+["#EA580C"]*len(nodes)), text=[hosp["name"]]+[n["name"] for n in nodes], textposition="top center", textfont=dict(size=11), hovertext=["🏥 Hospital"]+[f"📍 {n['distance']}" for n in nodes], hoverinfo="text", showlegend=False))
+            fig.add_trace(go.Scattermapbox(lat=[hosp["lat"]]+[n["lat"] for n in nodes], lon=[hosp["lng"]]+[n["lng"] for n in nodes], mode="markers+text", marker=dict(size=[22]+[14]*len(nodes), color=["#DC2626"]+["#EA580C"]*len(nodes)), text=[hosp["name"]]+[n["name"] for n in nodes], textposition="top center", textfont=dict(size=11), hovertext=[" Hospital"]+[f" {n['distance']}" for n in nodes], hoverinfo="text", showlegend=False))
             fig.update_layout(mapbox=dict(style="open-street-map", center=dict(lat=44.03, lon=-79.462), zoom=11.5), margin=dict(l=0, r=0, t=0, b=0), height=400)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -203,5 +223,18 @@ if submit_fu:
         "clinician_review_status": "Pending", "followup_date": now_str()[:10],
     })
     st.success(f"Follow-up **{fu_id}** submitted. Your results have been sent to your care team for review.")
+
+    # Mark questions as completed so they don't show again
+    if os.path.exists(q_path):
+        try:
+            with open(q_path, "r") as f:
+                all_qs = _json.load(f)
+            # Find the key that matches this case
+            for key in list(all_qs.keys()):
+                if key == case_id or case_id.lower() in key.lower() or key.lower() in case_id.lower():
+                    all_qs[key]["status"] = "completed"
+            with open(q_path, "w") as f:
+                _json.dump(all_qs, f, indent=2)
+        except: pass
 
     st.markdown('<div class="disclaimer">This assessment will be reviewed by a clinician. Transport recommendations require staff confirmation.</div>', unsafe_allow_html=True)
