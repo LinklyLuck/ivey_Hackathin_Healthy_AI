@@ -103,7 +103,7 @@ def get_priority_score(age: int, pain_level: int, symptoms: dict) -> dict:
     if ai_severity >= 10:
         explanations.append("Significant symptom severity detected")
     if red_flag:
-        explanations.append("⚠️ RED FLAG symptoms present — automatic escalation")
+        explanations.append(" RED FLAG symptoms present — automatic escalation")
 
     return {
         "pain_score": pain_score,

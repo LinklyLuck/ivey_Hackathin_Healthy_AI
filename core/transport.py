@@ -20,7 +20,7 @@ def recommend_transport(level: str, has_family: bool = False, severe: bool = Fal
             "transport_level": "None",
             "recommendation": "No transport needed. Standard follow-up pathway.",
             "nodes": [],
-            "icon": "✅",
+            "icon": "",
         }
 
     if severe:
@@ -28,7 +28,7 @@ def recommend_transport(level: str, has_family: bool = False, severe: bool = Fal
             "transport_level": "Red-LEVEL3",
             "recommendation": "URGENT: Immediate emergency escalation. Bypass community node — direct ambulance dispatch.",
             "nodes": [],
-            "icon": "🚑",
+            "icon": "",
         }
 
     if has_family:
@@ -36,12 +36,12 @@ def recommend_transport(level: str, has_family: bool = False, severe: bool = Fal
             "transport_level": "Red-LEVEL1",
             "recommendation": "Family member to bring patient to the nearest pickup node or directly to Southlake ED at a scheduled time.",
             "nodes": TRANSPORT_NODES,
-            "icon": "🚗",
+            "icon": "",
         }
 
     return {
         "transport_level": "Red-LEVEL2",
         "recommendation": "Patient to proceed to designated community pickup node. Southlake shuttle will collect grouped patients on next available run.",
         "nodes": TRANSPORT_NODES,
-        "icon": "🚌",
+        "icon": "",
     }

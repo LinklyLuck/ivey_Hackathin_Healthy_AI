@@ -77,11 +77,11 @@ def choose_generation_strategy(contract: dict, seed_df: pd.DataFrame) -> dict:
     # Risk notes
     risk_notes = []
     if ratio > 5:
-        risk_notes.append("⚠️ High expansion ratio — synthetic duplicates likely. Consider CTGAN for large-scale generation.")
+        risk_notes.append(" High expansion ratio — synthetic duplicates likely. Consider CTGAN for large-scale generation.")
     if len(hard_constraints) == 0:
-        risk_notes.append("⚠️ No hard constraints specified — output will mirror seed distribution closely.")
+        risk_notes.append(" No hard constraints specified — output will mirror seed distribution closely.")
     if esc_target and esc_target > 0.5:
-        risk_notes.append("⚠️ High escalation target may produce clinically implausible cohort.")
+        risk_notes.append(" High escalation target may produce clinically implausible cohort.")
 
     return {
         "strategy_name": strategy,
