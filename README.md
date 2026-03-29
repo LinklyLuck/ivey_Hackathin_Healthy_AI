@@ -1,8 +1,10 @@
 # 🧬 Southlake Agentic Synthetic Data Factory
 
-By Qi Sun & Jia An · Advisor: Kaiyu Li
+By Qi Sun and Jia An  
+Advisor: Kaiyu Li  
 
-Winner NO.2🏆, We got $2500 per-person.
+🏆 2nd Place Winner, Ivey × Southlake Health Hackathon 2026  
+Award: $2,500 per team member
 
 > An agentic synthetic data creation and validation service for healthcare — built for the Ivey × Southlake Health Hackathon 2026.
 
