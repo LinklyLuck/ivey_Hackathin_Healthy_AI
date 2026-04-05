@@ -4,7 +4,8 @@ By Qi Sun and Jia An
 Advisor: Kaiyu Li  
 
 Ivey × Southlake Health Hackathon 2026  
-Award: $2,500 per team member
+
+Hackathon project focused on AI-driven healthcare workflows, structured data integration, and prototype system development. The team’s participation was recognized through a follow-up $2,500 scholarship opportunity from Ivey MSc.
 
 > An agentic synthetic data creation and validation service for healthcare — built for the Ivey × Southlake Health Hackathon 2026.
 
