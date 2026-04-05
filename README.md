@@ -3,7 +3,7 @@
 By Qi Sun and Jia An  
 Advisor: Kaiyu Li  
 
-🏆 2nd Place Winner, Ivey × Southlake Health Hackathon 2026  
+Ivey × Southlake Health Hackathon 2026  
 Award: $2,500 per team member
 
 > An agentic synthetic data creation and validation service for healthcare — built for the Ivey × Southlake Health Hackathon 2026.
