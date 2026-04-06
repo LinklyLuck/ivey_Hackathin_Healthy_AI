@@ -1,4 +1,4 @@
-# 🧬 Southlake Agentic Synthetic Data Factory
+Southlake Agentic Synthetic Data Factory
 
 By Qi Sun and Jia An  
 Advisor: Kaiyu Li  
